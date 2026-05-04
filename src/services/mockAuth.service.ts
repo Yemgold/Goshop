@@ -51,6 +51,7 @@ login: async (data: LoginDTO): Promise<AuthResponse> => {
     name: "Demo User",
     roles: [data.role],
     activeRole: data.role,
+    roleRequests: [],
   };
 
   const response: AuthResponse = {

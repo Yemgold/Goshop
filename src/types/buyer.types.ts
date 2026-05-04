@@ -29,6 +29,7 @@ export type Order = {
 
 export interface TrackingOrder {
   id: string;
+  status: string;
   deliveryStatus: string;
   estimatedDelivery: string;
 

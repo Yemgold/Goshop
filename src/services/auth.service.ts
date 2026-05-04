@@ -1,6 +1,6 @@
 
 // services/auth.service.ts
-import API from "../api/axios";
+import apiClient from "../api";
 import type { AuthUser, UserRole } from "../store/auth.store";
 
 export type LoginDTO = {
@@ -16,16 +16,16 @@ export type AuthResponse = {
 
 export const authService = {
   login: async (data: LoginDTO): Promise<AuthResponse> => {
-    const res = await API.post("/auth/login", data);
+    const res = await apiClient.post("/auth/login", data);
     return res.data;
   },
 
   logout: async () => {
-    return API.post("/auth/logout");
+    return apiClient.post("/auth/logout");
   },
 
   me: async (): Promise<AuthUser> => {
-    const res = await API.get("/auth/me");
+    const res = await apiClient.get("/auth/me");
     return res.data;
   },
 };
