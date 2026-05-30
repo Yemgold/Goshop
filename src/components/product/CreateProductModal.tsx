@@ -69,7 +69,7 @@ export default function CreateProductModal({
 
   const [tags, setTags] = useState("");
 
-   const [ProductWeight, setProductWeight] = useState("");
+   const [weight, setWeight] = useState("");
  
 
   // ///////////////////////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ export default function CreateProductModal({
     setCategory("");
     setTags("");
 
-    setProductWeight("");
+    setWeight("");
 
 
 
@@ -159,7 +159,7 @@ export default function CreateProductModal({
       return;
     }
 
-    if (!ProductWeight) {
+    if (!weight) {
       toast.error("Product Weight is required");
       return;
     }
@@ -202,41 +202,10 @@ export default function CreateProductModal({
         .map((tag) => tag.trim())
         .filter(Boolean);
 
- 
-/* ================= PRODUCT WEIGHT ================= */
-
-let minWeight = 0;
-let maxWeight = 0;
-
-if (ProductWeight.includes("+")) {
-  minWeight = Number(
-    ProductWeight.replace("kg+", "")
-  );
-
-  maxWeight = minWeight;
-} else {
-  const [min, max] = ProductWeight
-    .replace(/kg/g, "")
-    .split("-");
-
-  minWeight = Number(min);
-  maxWeight = Number(max);
-}
-
-formData.append(
-  "productWeight",
-  ProductWeight
-);
-
-formData.append(
-  "minWeight",
-  String(minWeight)
-);
-
-formData.append(
-  "maxWeight",
-  String(maxWeight)
-);
+       formData.append(
+        "weight",
+        String(Number(weight))
+      );
 
 
       formData.append(
@@ -444,42 +413,13 @@ return (
             onChange={(e) => setTags(e.target.value)}
           />
 
-        <select
-  className="w-full h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-  value={ProductWeight}
-  onChange={(e) =>
-    setProductWeight(e.target.value)
-  }
->
-  <option value="">
-    Select Product Weight
-  </option>
-
-  <option value="0kg-5kg">
-    0kg - 5kg
-  </option>
-
-  <option value="6kg-10kg">
-    6kg - 10kg
-  </option>
-
-  <option value="11kg-20kg">
-    11kg - 20kg
-  </option>
-
-  <option value="21kg-50kg">
-    21kg - 50kg
-  </option>
-
-  <option value="51kg-100kg">
-    51kg - 100kg
-  </option>
-
-  <option value="100kg+">
-    Above 100kg
-  </option>
-</select>
-
+               <input
+              className="w-full h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Product Weight"
+              type="number"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+            />
 
         </div>
 
