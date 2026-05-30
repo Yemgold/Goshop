@@ -1,12 +1,12 @@
 import type { AuthUser } from "../store/auth.store";
-import type { UserRole } from "../store/auth.store";
+import type { UserRole } from "../types/roles";
 
 /**
  * Extract primary role safely
  */
 export const getPrimaryRole = (user: AuthUser): UserRole => {
   if (!user?.roles || user.roles.length === 0) {
-    return "buyer";
+    return "user";
   }
 
   return user.roles[0] as UserRole;
@@ -19,8 +19,8 @@ export const getRoleRoute = (user: AuthUser): string => {
   const role = getPrimaryRole(user);
 
   switch (role) {
-    case "buyer":
-      return "/buyer/home";
+    case "user":
+      return "/buyers/home";
 
     case "rider":
       return "/rider/jobs";

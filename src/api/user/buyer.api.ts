@@ -1,0 +1,120 @@
+
+
+import apiClient from "../core/api.client";
+
+import type {
+  Cart,
+  Product,
+  DashboardData,
+  TrackingOrder,
+} from "../../types/buyer.types";
+
+import type { CreateOrderPayload } from "../../types/paymentintent.type";
+
+/* ================= DASHBOARD ================= */
+export const getBuyerDashboardAPI = async (): Promise<DashboardData> => {
+  const res = await apiClient.get("/dashboard/buyer");
+  return res.data.data;
+};
+
+/* ================= PRODUCTS ================= */
+export const getBuyerProductsAPI = async (): Promise<Product[]> => {
+  const res = await apiClient.get("/buyers/products");
+  return res.data.data;
+};
+
+export const getBuyerProductByIdAPI = async (
+  productId: string
+): Promise<Product> => {
+  const res = await apiClient.get(`/buyers/products/${productId}`);
+  return res.data.data;
+};
+
+/* ================= ORDERS ================= */
+export const getBuyerOrdersAPI = async (buyerId: string) => {
+  const res = await apiClient.get(`/orders/buyer-orders/${buyerId}`);
+  return res.data.data;
+};
+
+export const placeOrderAPI = async (payload: CreateOrderPayload) => {
+  const res = await apiClient.post("/orders/create-order", payload);
+  return res.data;
+};
+
+export const getOrderTrackingAPI = async (
+  orderId: string,
+  customerId: string
+): Promise<TrackingOrder> => {
+  const res = await apiClient.get(
+    `/orders/customer-orders/${orderId}/${customerId}`
+  );
+  return res.data.data;
+};
+
+/* ================= CART ================= */
+
+export const getCartAPI = async (): Promise<Cart> => {
+  try {
+    const res = await apiClient.get("/carts/get-cart");
+    return res.data?.data;
+  } catch (error: any) {
+    const status = error?.response?.status;
+
+    // 👇 treat "no cart yet" as empty cart (NOT error)
+    if (status === 404) {
+      return {
+        userId: "",
+        items: [],
+        total:0,
+      };
+    }
+
+    throw error;
+  }
+};
+
+
+
+export const getOrCreateCartAPI = async () => {
+  const res = await apiClient.get("/carts/get-or-create-cart");
+  return res.data.data;
+};
+
+export const addToCartAPI = async (
+  productId: string,
+  businessId: string,
+  quantity: number
+) => {
+  const res = await apiClient.post("/carts/add-item-to-cart", {
+    productId,
+    businessId,
+    quantity,
+  });
+
+  return res.data.data;
+};
+
+export const updateCartItemAPI = async (
+  productId: string,
+  quantity: number
+) => {
+  const res = await apiClient.patch(
+    `/carts/update-item-quantity/${productId}`,
+    { quantity }
+  );
+
+  return res.data.data;
+};
+
+export const removeCartItemAPI = async (productId: string) => {
+  const res = await apiClient.delete(`/carts/remove-item/${productId}`);
+  return res.data.data;
+};
+
+export const clearCartAPI = async () => {
+  const res = await apiClient.delete("/carts/clear-cart");
+  return res.data.data;
+};
+
+
+

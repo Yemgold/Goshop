@@ -1,90 +1,63 @@
-import { Outlet, NavLink, Navigate, useLocation } from "react-router-dom";
-import useLogout from "../../hooks/useLogout";
-import RoleSwitcher from "../../components/shared/RoleSwitcher";
+
+
+import { Outlet, NavLink, Navigate } from "react-router-dom";
 import { useAuthStore } from "../../store/auth.store";
-import { useEffect } from "react";
+
+import AppHeroHeader from "../../components/ui/AppHeroHeader";
 
 export default function RiderLayout() {
-  const logout = useLogout();
-  const location = useLocation();
-
   const user = useAuthStore((s) => s.user);
-  const activeRole = user?.activeRole;
 
-  // ❗ MUST NOT render anything before hooks
-  const isLoggedOut = !user;
-  const wrongRole = user && activeRole !== "rider";
-
-  // 🔁 keep URL synced with role
-  useEffect(() => {
-    if (!activeRole) return;
-
-    if (!location.pathname.startsWith("/rider")) {
-      window.history.replaceState(null, "", "/rider/dashboard");
-    }
-  }, [activeRole, location.pathname]);
-
-  // 🚨 1. NOT LOGGED IN → LOGIN
-  if (isLoggedOut) {
+  // ================= AUTH GUARD =================
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // 🚨 2. WRONG ROLE → REDIRECT
-  if (wrongRole) {
-    return <Navigate to={`/${activeRole}/dashboard`} replace />;
-  }
+  const fullName =
+    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `flex flex-col items-center justify-center text-xs sm:text-sm px-3 py-2 rounded-lg transition ${
+      isActive
+        ? "bg-black text-white"
+        : "text-gray-600 hover:bg-gray-100"
+    }`;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50">
 
-      {/* HEADER */}
-      <header className="h-14 flex items-center justify-between px-4 border-b bg-white">
+      {/* ================= HERO HEADER ================= */}
+      <AppHeroHeader
+        title="Rider Panel 🚴‍♂️"
+        subtitle={`Welcome back, ${fullName || "Rider"} 👋`}
+        online={true}
+      />
 
-        <h1 className="font-bold">Rider</h1>
-
-        <RoleSwitcher />
-
-        <div className="flex items-center gap-3">
-          <span className="text-green-600 text-sm">● Online</span>
-
-          <button onClick={logout} className="text-sm text-red-500">
-            Logout
-          </button>
-        </div>
-
-      </header>
-
-      {/* MAIN */}
-      <main className="flex-1 overflow-y-auto p-4">
+      {/* ================= MAIN ================= */}
+      <main className="flex-1 overflow-y-auto p-3 sm:p-4 pb-24">
         <Outlet />
       </main>
 
-      {/* NAV */}
-      <nav className="h-14 flex justify-around items-center border-t bg-white shadow-sm">
+      {/* ================= BOTTOM NAV ================= */}
+      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t shadow-md flex justify-around items-center pb-[env(safe-area-inset-bottom)] z-40">
 
         <NavLink
           to="/rider/dashboard"
-          className={({ isActive }) =>
-            isActive ? "font-bold text-black" : "text-gray-500"
-          }
+          className={linkClass}
         >
           Dashboard
         </NavLink>
 
         <NavLink
           to="/rider/jobs"
-          className={({ isActive }) =>
-            isActive ? "font-bold text-black" : "text-gray-500"
-          }
+          className={linkClass}
         >
           Jobs
         </NavLink>
 
         <NavLink
           to="/rider/earnings"
-          className={({ isActive }) =>
-            isActive ? "font-bold text-black" : "text-gray-500"
-          }
+          className={linkClass}
         >
           Earnings
         </NavLink>
@@ -94,105 +67,3 @@ export default function RiderLayout() {
     </div>
   );
 }
-
-
-
-
-// import { Outlet, NavLink } from "react-router-dom";
-// import useLogout from "../../hooks/useLogout";
-// import RoleSwitcher from "../../components/shared/RoleSwitcher";
-
-// export default function RiderLayout() {
-//   const logout = useLogout();
-
-//   return (
-//     <div className="flex flex-col h-screen bg-gray-50">
-
-//       {/* ================= HERO HEADER ================= */}
-//       <div className="relative h-32 w-full">
-
-//         {/* HERO IMAGE */}
-//         <img
-//           src="/images/hero.png"
-//           alt="rider hero"
-//           className="w-full h-full object-cover"
-//         />
-
-//         {/* OVERLAY */}
-//         <div className="absolute inset-0 bg-black/50 flex items-center justify-between px-4 text-white">
-
-//           {/* LEFT */}
-//           <div className="flex flex-col">
-//             <h1 className="font-bold text-lg">
-//               Rider App 🚴‍♂️
-//             </h1>
-
-//             <span className="text-xs text-green-300 flex items-center gap-1">
-//               ● Online
-//             </span>
-//           </div>
-
-//           {/* RIGHT */}
-//           <div className="flex items-center gap-3">
-
-//             <RoleSwitcher />
-
-//             <button
-//               onClick={logout}
-//               className="text-xs text-red-300 hover:text-red-200"
-//             >
-//               Logout
-//             </button>
-
-//           </div>
-
-//         </div>
-
-//       </div>
-
-//       {/* ================= MAIN ================= */}
-//       <main className="flex-1 overflow-y-auto">
-//         <Outlet />
-//       </main>
-
-//       {/* ================= BOTTOM NAV ================= */}
-//       <nav className="h-16 flex justify-around items-center border-t bg-white shadow-md">
-
-//         <NavLink
-//           to="/rider/dashboard"
-//           className={({ isActive }) =>
-//             `text-sm font-medium ${
-//               isActive ? "text-black" : "text-gray-500"
-//             }`
-//           }
-//         >
-//           Jobs
-//         </NavLink>
-
-//         <NavLink
-//           to="/rider/earnings"
-//           className={({ isActive }) =>
-//             `text-sm font-medium ${
-//               isActive ? "text-black" : "text-gray-500"
-//             }`
-//           }
-//         >
-//           Earnings
-//         </NavLink>
-
-//         <NavLink
-//           to="/rider/jobs"
-//           className={({ isActive }) =>
-//             `text-sm font-medium ${
-//               isActive ? "text-black" : "text-gray-500"
-//             }`
-//           }
-//         >
-//           History
-//         </NavLink>
-
-//       </nav>
-
-//     </div>
-//   );
-// }

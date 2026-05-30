@@ -7,3 +7,6 @@ export function EmptyState({ text }: { text: string }) {
     </div>
   );
 }
+
+
+

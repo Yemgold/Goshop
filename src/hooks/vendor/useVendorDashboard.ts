@@ -1,7 +1,8 @@
 
 
+
 import { useQuery } from "@tanstack/react-query";
-import { getVendorDashboardAPI } from "../../api/vendor/vendor.api";
+import { getVendorDashboardAPI } from "../../api/user/vendor.api";
 import { vendorKeys } from "../../query/vendorKeys";
 import type { DashboardData } from "../../types/vendor.types";
 

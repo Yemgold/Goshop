@@ -1,7 +1,7 @@
 
 // hooks/vendor/useUpdateOrderStatus.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateVendorOrder } from "../../services/vendor.service";
+import { updateVendorOrder } from "../../services/vendor/vendor.service";
 
 export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient();

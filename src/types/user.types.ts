@@ -1,6 +1,6 @@
 
 
-export type UserRole = "buyer" | "rider" | "promoter" | "admin";
+export type UserRole = "user" | "rider" | "promoter" | "vendor";
 
 export interface UserProfile {
   id: string;
@@ -10,6 +10,7 @@ export interface UserProfile {
   role: UserRole;
   avatar?: string;
   createdAt: number;
+  
 
    promoterStatus?: "none" | "pending" | "active";
   referralCode?: string;

@@ -1,34 +1,79 @@
-
 import type { AxiosInstance } from "axios";
+import { useAuthStore } from "../../store/auth.store";
+import { refreshClient } from "../refreshClient";
 
 export const setupInterceptors = (api: AxiosInstance) => {
-  /* ================= REQUEST INTERCEPTOR ================= */
-  api.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem("accessToken");
+  /* ================= REQUEST ================= */
+  api.interceptors.request.use((config) => {
+    const token =
+      useAuthStore.getState().accessToken ||
+      localStorage.getItem("accessToken"); // ✅ IMPORTANT FALLBACK
 
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    const url = config.url || "";
 
-      return config;
-    },
-    (error) => Promise.reject(error)
-  );
+    const isAuthEndpoint = url.includes("/auth/login");
 
-  /* ================= RESPONSE INTERCEPTOR ================= */
+    if (token && config.headers && !isAuthEndpoint) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  });
+
+  /* ================= RESPONSE ================= */
   api.interceptors.response.use(
     (response) => response,
-    (error) => {
-      // Global error handling (Uber-style central control)
-      if (error.response?.status === 401) {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("user");
 
-        window.location.href = "/login";
+    async (error) => {
+      const originalRequest = error.config;
+      const status = error.response?.status;
+
+      const url = originalRequest?.url || "";
+
+      const isAuthEndpoint =
+        url.includes("/auth/login") ||
+        url.includes("/auth/register");
+
+      if (isAuthEndpoint) {
+        return Promise.reject(error);
+      }
+
+      if (status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+
+        try {
+          const res = await refreshClient.post(
+            "/auth/request-access-token"
+          );
+
+          const accessToken = res?.data?.data?.accessToken;
+
+          if (!accessToken) {
+            throw new Error("No access token returned");
+          }
+
+          const user = useAuthStore.getState().user;
+
+          if (!user) {
+            throw new Error("No user in store");
+          }
+
+          useAuthStore.getState().login(user, accessToken);
+
+          originalRequest.headers.Authorization =
+            `Bearer ${accessToken}`;
+
+          return api(originalRequest);
+        } catch (refreshError) {
+          useAuthStore.getState().logout();
+          window.location.href = "/login";
+          return Promise.reject(refreshError);
+        }
       }
 
       return Promise.reject(error);
     }
   );
 };
+
+

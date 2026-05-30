@@ -1,82 +1,62 @@
-import { Outlet, NavLink, Navigate, useLocation } from "react-router-dom";
-import useLogout from "../../hooks/useLogout";
-import RoleSwitcher from "../../components/shared/RoleSwitcher";
+import { Outlet, NavLink, Navigate } from "react-router-dom";
 import { useAuthStore } from "../../store/auth.store";
-import { useEffect } from "react";
+
+import AppHeroHeader from "../../components/ui/AppHeroHeader";
 
 export default function PromoterLayout() {
-  const logout = useLogout();
-  const location = useLocation();
-
   const user = useAuthStore((s) => s.user);
-  const activeRole = user?.activeRole;
 
-  // =========================
-  // 1. ALL HOOKS FIRST (SAFE)
-  // =========================
-  useEffect(() => {
-    if (!activeRole) return;
-
-    if (!location.pathname.startsWith("/promoter")) {
-      window.history.replaceState(null, "", "/promoter/dashboard");
-    }
-  }, [activeRole, location.pathname]);
-
-  // =========================
-  // 2. AUTH GUARDS AFTER HOOKS
-  // =========================
+  // ================= AUTH GUARD =================
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (activeRole && activeRole !== "promoter") {
-    return <Navigate to={`/${activeRole}/dashboard`} replace />;
-  }
+  const fullName =
+    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `text-sm px-3 py-1 rounded transition ${
-      isActive ? "bg-black text-white" : "text-gray-600 hover:bg-gray-100"
+    `flex flex-col items-center justify-center text-xs sm:text-sm px-3 py-2 rounded-lg transition ${
+      isActive
+        ? "bg-black text-white"
+        : "text-gray-600 hover:bg-gray-100"
     }`;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50">
 
-      {/* HEADER */}
-      <header className="h-14 flex items-center justify-between px-4 border-b bg-white">
+      {/* ================= HERO HEADER ================= */}
+      <AppHeroHeader
+        title="Promoter 📢"
+        subtitle={`Welcome, ${fullName || "Promoter"} — Share & earn rewards`}
+        online={true}
+      />
 
-        <div>
-          <h1 className="font-bold">Promoter 📢</h1>
-          <p className="text-xs text-gray-500">Share & earn</p>
-        </div>
-
-        <RoleSwitcher />
-
-        <button
-          onClick={logout}
-          className="text-sm text-red-500"
-        >
-          Logout
-        </button>
-
-      </header>
-
-      {/* MAIN */}
-      <main className="flex-1 overflow-y-auto p-4">
+      {/* ================= MAIN ================= */}
+      <main className="flex-1 overflow-y-auto p-3 sm:p-4 pb-24">
         <Outlet />
       </main>
 
-      {/* MOBILE NAV */}
-      <nav className="h-14 flex justify-around items-center border-t bg-white">
+      {/* ================= BOTTOM NAV ================= */}
+      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t flex justify-around items-center pb-[env(safe-area-inset-bottom)] z-40 shadow-sm">
 
-        <NavLink to="/promoter/dashboard" className={linkClass}>
+        <NavLink
+          to="/promoter/dashboard"
+          className={linkClass}
+        >
           Dashboard
         </NavLink>
 
-        <NavLink to="/promoter/share" className={linkClass}>
+        <NavLink
+          to="/promoter/share"
+          className={linkClass}
+        >
           Share
         </NavLink>
 
-        <NavLink to="/promoter/campaigns" className={linkClass}>
+        <NavLink
+          to="/promoter/campaigns"
+          className={linkClass}
+        >
           Campaigns
         </NavLink>
 
@@ -85,3 +65,64 @@ export default function PromoterLayout() {
     </div>
   );
 }
+
+
+
+
+// import { Outlet, NavLink, Navigate } from "react-router-dom";
+// import { useAuthStore } from "../../store/auth.store";
+// import AppHeroHeader from "../../components/ui/AppHeroHeader";
+
+// export default function PromoterLayout() {
+//   const user = useAuthStore((s) => s.user);
+
+//   // ================= AUTH GUARD =================
+//   if (!user) {
+//     return <Navigate to="/login" replace />;
+//   }
+
+//   const linkClass = ({ isActive }: { isActive: boolean }) =>
+//     `text-sm px-3 py-1 rounded transition ${
+//       isActive
+//         ? "bg-black text-white"
+//         : "text-gray-600 hover:bg-gray-100"
+//     }`;
+
+//   const fullName =
+//     `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+
+//   return (
+//     <div className="flex flex-col h-screen bg-gray-50">
+
+//       {/* ================= HERO HEADER ================= */}
+//       <AppHeroHeader
+//         title="Promoter 📢"
+//         subtitle={`Welcome, ${fullName || "Promoter"} — Share & earn rewards`}
+//         online={true}
+//       />
+
+//       {/* ================= MAIN ================= */}
+//       <main className="flex-1 overflow-y-auto p-4">
+//         <Outlet />
+//       </main>
+
+//       {/* ================= BOTTOM NAV ================= */}
+//       <nav className="h-14 flex justify-around items-center border-t bg-white">
+
+//         <NavLink to="/promoter/dashboard" className={linkClass}>
+//           Dashboard
+//         </NavLink>
+
+//         <NavLink to="/promoter/share" className={linkClass}>
+//           Share
+//         </NavLink>
+
+//         <NavLink to="/promoter/campaigns" className={linkClass}>
+//           Campaigns
+//         </NavLink>
+
+//       </nav>
+
+//     </div>
+//   );
+// }

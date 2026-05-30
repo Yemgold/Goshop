@@ -1,11 +1,15 @@
 
-import { useAuthStore } from "../../store/auth.store";
-import type { UserRole } from "../../store/auth.store";
-import { getRoleRoute } from "../../utils/roleRedirect";
+
+
+
+
 import { useNavigate } from "react-router-dom";
+import { getRoleRoute } from "../../utils/roleRedirect";
+import { useAuthStore } from "../../store/auth.store";
+
+export type UserRole = "vendor" | "rider" | "promoter";
 
 const roleIcons: Record<UserRole, string> = {
-  buyer: "🛒",
   vendor: "🏪",
   rider: "🚚",
   promoter: "📢",
@@ -15,28 +19,33 @@ export default function RoleSwitcher() {
   const navigate = useNavigate();
 
   const user = useAuthStore((s) => s.user);
-  const switchRole = useAuthStore((s) => s.switchRole);
+  const setRole = useAuthStore((s) => s.setRole);
 
-  if (!user) return null;
+  const roles = user?.roles || [];
+  const currentRole = user?.activeRole;
 
-  const roles = user.roles ?? [];
-  const active = user.activeRole;
-
-  // 🚨 safety: prevent crash if active role is missing
-  const activeIndex = Math.max(0, roles.indexOf(active));
+  if (!user || roles.length === 0) return null;
 
   const handleChange = (role: UserRole) => {
-    switchRole(role);
+    console.log("🔄 SWITCH ROLE:", role);
+
+    // 1. update auth store ONLY (single source of truth)
+    setRole(role);
+
+    // 2. navigate
     navigate(getRoleRoute(role), { replace: true });
   };
 
-  // 🚨 safety: avoid divide-by-zero
-  const width = roles.length ? 100 / roles.length : 100;
+  const activeIndex = Math.max(
+    0,
+    roles.findIndex((r) => r === currentRole)
+  );
+
+  const width = 100 / roles.length;
 
   return (
     <div className="relative flex bg-gray-200 rounded-lg p-1 w-fit overflow-hidden">
-
-      {/* 🔥 animated background slider */}
+      {/* indicator */}
       <div
         className="absolute top-1 bottom-1 bg-black rounded-md transition-all duration-300"
         style={{
@@ -45,18 +54,15 @@ export default function RoleSwitcher() {
         }}
       />
 
-      {/* buttons */}
       {roles.map((role) => (
         <button
           key={role}
-          onClick={() => handleChange(role)}
-          className={`
-            relative z-10 flex items-center gap-1 px-4 py-1 text-sm rounded-md
-            transition-colors
-            ${active === role ? "text-white" : "text-gray-700"}
-          `}
+          onClick={() => handleChange(role as UserRole)}
+          className={`relative z-10 flex items-center gap-1 px-4 py-1 text-sm rounded-md ${
+            currentRole === role ? "text-white" : "text-gray-700"
+          }`}
         >
-          <span>{roleIcons[role]}</span>
+          <span>{roleIcons[role as UserRole]}</span>
           <span className="capitalize">{role}</span>
         </button>
       ))}

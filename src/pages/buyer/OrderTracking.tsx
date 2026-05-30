@@ -3,23 +3,33 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-import { getOrderTracking } from "../../services/buyer.service";
 import type { TrackingOrder } from "../../types/buyer.types";
 
 import { Card } from "../../components/ui/Card";
 import { PageHeader } from "../../components/ui/PageHeader";
 
+import { buyerService } from "../../services/buyer.api.service";
+
+// 🔥 replace this with your real auth store / context
+import { useAuthStore } from "../../store/auth.store";
+
 export default function OrderTracking() {
   const { orderId } = useParams();
+
+  // ✅ get logged-in user
+  const user = useAuthStore((s) => s.user);
 
   const {
     data: order,
     isLoading,
     isError,
   } = useQuery<TrackingOrder>({
-    queryKey: ["tracking", orderId],
-    queryFn: () => getOrderTracking(orderId!),
-    enabled: !!orderId,
+    queryKey: ["tracking", orderId, user?.id],
+    enabled: !!orderId && !!user?.id,
+
+    queryFn: () =>
+      buyerService.getOrderTracking(orderId!, user!.id),
+
     refetchInterval: 4000,
   });
 
@@ -40,8 +50,12 @@ export default function OrderTracking() {
   }
 
   /* ================= PROGRESS ================= */
-  const completedSteps = order.timeline.filter(t => t.completed).length;
-  const progress = (completedSteps / order.timeline.length) * 100;
+  const completedSteps = order.timeline.filter(
+    (t) => t.completed
+  ).length;
+
+  const progress =
+    (completedSteps / order.timeline.length) * 100;
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
@@ -54,7 +68,9 @@ export default function OrderTracking() {
 
           <div className="flex justify-between">
             <div>
-              <p className="text-sm text-gray-500">Status</p>
+              <p className="text-sm text-gray-500">
+                Status
+              </p>
               <h2 className="text-lg font-semibold">
                 {order.deliveryStatus}
               </h2>
@@ -83,17 +99,21 @@ export default function OrderTracking() {
 
       {/* ================= RIDER INFO ================= */}
       <Card>
-        <h2 className="font-semibold mb-3">Your Rider</h2>
+        <h2 className="font-semibold mb-3">
+          Your Rider
+        </h2>
 
         <div className="flex items-center justify-between">
 
           <div>
             <p className="font-medium">
-              {order.rider?.name || "Assigning rider..."}
+              {order.rider?.name ||
+                "Assigning rider..."}
             </p>
 
             <p className="text-sm text-gray-500">
-              {order.rider?.vehicle || "Finding nearby rider"}
+              {order.rider?.vehicle ||
+                "Finding nearby rider"}
             </p>
           </div>
 
@@ -106,13 +126,16 @@ export default function OrderTracking() {
 
       {/* ================= TIMELINE ================= */}
       <Card>
-        <h2 className="font-semibold mb-4">Delivery Progress</h2>
+        <h2 className="font-semibold mb-4">
+          Delivery Progress
+        </h2>
 
         <div className="space-y-4">
-
           {order.timeline.map((step, index) => (
-            <div key={index} className="flex items-start gap-3">
-
+            <div
+              key={index}
+              className="flex items-start gap-3"
+            >
               {/* DOT */}
               <div
                 className={`w-3 h-3 rounded-full mt-2 ${
@@ -126,7 +149,6 @@ export default function OrderTracking() {
               <div className="flex-1">
 
                 <div className="flex justify-between">
-
                   <p className="font-medium">
                     {step.step}
                   </p>
@@ -134,7 +156,6 @@ export default function OrderTracking() {
                   <span className="text-xs text-gray-500">
                     {step.time || ""}
                   </span>
-
                 </div>
 
                 <p className="text-xs text-gray-400">
@@ -147,11 +168,9 @@ export default function OrderTracking() {
 
             </div>
           ))}
-
         </div>
       </Card>
 
     </div>
   );
 }
-

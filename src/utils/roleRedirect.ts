@@ -1,11 +1,11 @@
 
-
-import type { UserRole } from "../store/auth.store";
+// src\utils\roleRedirect.ts
+import type { UserRole } from "../types/roles"; 
 
 export function getRoleRoute(role: UserRole) {
   switch (role) {
-    case "buyer":
-      return "/buyer/dashboard";
+    case "user":
+      return "/buyers/dashboard";
     case "vendor":
       return "/vendor/dashboard";
     case "rider":

@@ -1,35 +1,80 @@
 
 
 import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import AuthLayout from "../../app/layouts/AuthLayout";
+import { toast } from "sonner";
+import { authService } from "../../services/auth.service";
+import { useUIStore } from "../../store/ui.store";
 
 export default function ResetPassword() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // ✅ token from URL: /reset-password?token=123456
+  const token = searchParams.get("token");
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const startLoading = useUIStore((s) => s.startLoading);
+  const stopLoading = useUIStore((s) => s.stopLoading);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     if (!password || !confirmPassword) {
-      setError("Please fill in all fields");
+      toast.error("Please fill in all fields");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
-    setLoading(true);
+    if (!token) {
+      toast.error("Invalid or expired reset link");
+      return;
+    }
 
-    setTimeout(() => {
-      setLoading(false);
+    startLoading();
+
+    try {
+      console.log("🔐 RESET PASSWORD:", {
+        password,
+        confirmPassword,
+        token,
+      });
+
+      const res = await authService.resetPassword({
+        password,
+        confirmPassword,
+        token,
+      });
+
+      const data = res.data;
+
+      console.log("✅ RESET RESPONSE:", data);
+
+      toast.success(
+        data?.message || "Password reset successful"
+      );
+
       setSuccess(true);
-    }, 800);
+
+    } catch (err: any) {
+      console.log("❌ RESET ERROR:", err?.response?.data);
+
+      toast.error(
+        err?.response?.data?.message ||
+        "Failed to reset password"
+      );
+
+    } finally {
+      stopLoading();
+    }
   };
 
   return (
@@ -58,12 +103,12 @@ export default function ResetPassword() {
               You can now log in with your new password.
             </p>
 
-            <a
-              href="/login"
-              className="inline-block mt-3 text-white font-medium hover:underline"
+            <button
+              onClick={() => navigate("/login")}
+              className="mt-4 text-white underline text-sm"
             >
               Go to Login →
-            </a>
+            </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -94,25 +139,19 @@ export default function ResetPassword() {
                          outline-none focus:ring-2 focus:ring-blue-500/40 transition"
             />
 
-            {/* PASSWORD HINT */}
+            {/* HINT */}
             <p className="text-xs text-white/50">
               Use at least 6 characters for better security
             </p>
 
-            {/* ERROR */}
-            {error && (
-              <p className="text-red-400 text-sm">{error}</p>
-            )}
-
             {/* BUTTON */}
             <button
-              disabled={loading}
               className="w-full py-3 rounded-xl font-medium
                          bg-gradient-to-r from-indigo-600 to-blue-600
                          hover:opacity-90 transition
-                         text-white disabled:opacity-50"
+                         text-white"
             >
-              {loading ? "Resetting..." : "Reset Password"}
+              Reset Password
             </button>
 
           </form>

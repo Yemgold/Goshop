@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateVendorOrderAPI } from "../../api/vendor/vendor.api";
+import { updateVendorOrderAPI } from "../../api/user/vendor.api";
 import { vendorKeys } from "../../query/vendorKeys";
 
 type Order = {

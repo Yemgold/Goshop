@@ -1,89 +1,77 @@
-import { Outlet, NavLink, Navigate, useLocation } from "react-router-dom";
-import useLogout from "../../hooks/useLogout";
-import RoleSwitcher from "../../components/shared/RoleSwitcher";
-import { useAuthStore } from "../../store/auth.store";
-import { useEffect } from "react";
 
-export default function VendorLayout() {
-  const logout = useLogout();
-  const location = useLocation();
 
-  const user = useAuthStore((s) => s.user);
-  const activeRole = user?.activeRole;
 
-  // =========================
-  // ALL HOOKS ABOVE THIS LINE
-  // =========================
 
-  useEffect(() => {
-    if (!activeRole) return;
 
-    if (!location.pathname.startsWith("/vendor")) {
-      window.history.replaceState(null, "", "/vendor/dashboard");
-    }
-  }, [activeRole, location.pathname]);
+// import { Outlet, Navigate } from "react-router-dom";
+// import { useState } from "react";
 
-  // =========================
-  // GUARDS (AFTER HOOKS)
-  // =========================
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+// import { useAuthStore } from "../../store/auth.store";
+// import AppHeroHeader from "../../components/ui/AppHeroHeader";
 
-  if (activeRole && activeRole !== "vendor") {
-    return <Navigate to={`/${activeRole}/dashboard`} replace />;
-  }
+// import { VendorSidebar } from "../../components/layout/VendorSidebar";
 
-  const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `text-sm px-3 py-1 rounded transition ${
-      isActive ? "bg-black text-white" : "text-gray-600 hover:bg-gray-100"
-    }`;
+// import CreatePhysicalProductModal from "../../components/product/CreateProductModal";
+// import CreateDigitalProductModal from "../../components/product/CreateDigitalProductModal";
 
-  return (
-    <div className="flex flex-col h-screen bg-gray-50">
+// export default function VendorLayout() {
+//   const user = useAuthStore((s) => s.user);
+//   const currentRole = useAuthStore((s) => s.user?.activeRole);
 
-      {/* HEADER */}
-      <header className="h-14 flex items-center justify-between px-4 border-b bg-white">
+//   // ================= MODAL STATE =================
+//   const [openPhysicalModal, setOpenPhysicalModal] = useState(false);
+//   const [openDigitalModal, setOpenDigitalModal] = useState(false);
 
-        <div>
-          <h1 className="font-bold">Vendor Panel 🏪</h1>
-          <p className="text-xs text-gray-500">Manage your store</p>
-        </div>
+//   // ================= AUTH GUARD =================
+//   if (!user) {
+//     return <Navigate to="/login" replace />;
+//   }
 
-        <RoleSwitcher />
+//   if (!currentRole) {
+//     return <div className="p-6">Loading role...</div>;
+//   }
 
-        <div className="flex items-center gap-3">
-          <span className="text-green-600 text-sm">● Online</span>
+//   if (currentRole !== "vendor") {
+//     return <Navigate to={`/${currentRole}/dashboard`} replace />;
+//   }
 
-          <button onClick={logout} className="text-sm text-red-500">
-            Logout
-          </button>
-        </div>
+//   const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
 
-      </header>
+//   return (
+//     <div className="flex h-screen bg-gray-50">
 
-      {/* MAIN */}
-      <main className="flex-1 overflow-y-auto p-4">
-        <Outlet />
-      </main>
+//       {/* ================= SIDEBAR ================= */}
+//       <VendorSidebar
+//         onAddPhysical={() => setOpenPhysicalModal(true)}
+//         onAddDigital={() => setOpenDigitalModal(true)}
+//       />
 
-      {/* MOBILE NAV */}
-      <nav className="h-14 flex justify-around items-center border-t bg-white">
+//       {/* ================= MAIN CONTENT ================= */}
+//       <div className="flex flex-col flex-1 overflow-hidden">
 
-        <NavLink to="/vendor/dashboard" className={linkClass}>
-          Dashboard
-        </NavLink>
+//         {/* HEADER */}
+//         <AppHeroHeader
+//           title="Vendor Panel 🏪"
+//           subtitle={`Welcome back, ${fullName || "Vendor"} 👋`}
+//           online={true}
+//         />
 
-        <NavLink to="/vendor/products" className={linkClass}>
-          Products
-        </NavLink>
+//         {/* PAGE CONTENT */}
+//         <main className="flex-1 overflow-y-auto p-4">
+//           <Outlet />
+//         </main>
+//       </div>
 
-        <NavLink to="/vendor/orders" className={linkClass}>
-          Orders
-        </NavLink>
+//       {/* ================= MODALS ================= */}
+//       <CreatePhysicalProductModal
+//         open={openPhysicalModal}
+//         onClose={() => setOpenPhysicalModal(false)}
+//       />
 
-      </nav>
-
-    </div>
-  );
-}
+//       <CreateDigitalProductModal
+//         open={openDigitalModal}
+//         onClose={() => setOpenDigitalModal(false)}
+//       />
+//     </div>
+//   );
+// }

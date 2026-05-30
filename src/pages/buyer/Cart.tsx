@@ -1,264 +1,135 @@
 
 
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-
-import type { CartItem } from "../../types/buyer.types"; 
-
-import { getCart,updateCartItem,removeCartItem,clearCart } from "../../services/buyer.service"; 
+import { useCart } from "../../hooks/buyer/useCart";
+import {
+  enrichCartItems,
+  calculateCartTotal,
+} from "../../mappers/cart.mapper";
 
 // UI
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { EmptyCartState } from "../../components/ui/empty-states/EmptyCartState";
 
 export default function Cart() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
-  /* ================= CART QUERY ================= */
-  const { data: items = [], isLoading } = useQuery({
-    queryKey: ["cart"],
-    queryFn: getCart,
-  });
+  const {
+    cart,
+    products,
+    isLoading,
+    isError,
+    updateQty,
+    removeItem,
+    clearCart,
+  } = useCart();
 
-  /* =========================================================
-     ➕ OPTIMISTIC UPDATE: UPDATE QTY
-  ========================================================= */
-  const updateQtyMutation = useMutation({
-    mutationFn: ({
-      id,
-      quantity,
-    }: {
-      id: string;
-      quantity: number;
-    }) => updateCartItem(id, quantity),
+  const items = cart?.items || [];
 
-    // 🔥 instant UI update
-    onMutate: async (newItem) => {
-      await queryClient.cancelQueries({ queryKey: ["cart"] });
+  const enrichedItems = enrichCartItems(items, products);
+  const total = calculateCartTotal(enrichedItems);
 
-      const previousCart = queryClient.getQueryData<CartItem[]>(["cart"]);
+  /* ================= STATES ================= */
 
-      queryClient.setQueryData<CartItem[]>(["cart"], (old = []) =>
-        old.map((item) =>
-          item.id === newItem.id
-            ? { ...item, quantity: newItem.quantity }
-            : item
-        )
-      );
-
-      return { previousCart };
-    },
-
-    // ❌ rollback if error
-    onError: (_err, _newItem, context) => {
-      if (context?.previousCart) {
-        queryClient.setQueryData(["cart"], context.previousCart);
-      }
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-    },
-  });
-
-  /* =========================================================
-     ❌ OPTIMISTIC REMOVE ITEM
-  ========================================================= */
-  const removeMutation = useMutation({
-    mutationFn: removeCartItem,
-
-    onMutate: async (id: string) => {
-      await queryClient.cancelQueries({ queryKey: ["cart"] });
-
-      const previousCart = queryClient.getQueryData<CartItem[]>(["cart"]);
-
-      queryClient.setQueryData<CartItem[]>(["cart"], (old = []) =>
-        old.filter((item) => item.id !== id)
-      );
-
-      return { previousCart };
-    },
-
-    onError: (_err, _id, context) => {
-      if (context?.previousCart) {
-        queryClient.setQueryData(["cart"], context.previousCart);
-      }
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-    },
-  });
-
-  /* =========================================================
-     🧹 CLEAR CART (OPTIMISTIC)
-  ========================================================= */
-  const clearMutation = useMutation({
-    mutationFn: clearCart,
-
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["cart"] });
-
-      const previousCart = queryClient.getQueryData<CartItem[]>(["cart"]);
-
-      queryClient.setQueryData(["cart"], []);
-
-      return { previousCart };
-    },
-
-    onError: (_err, _vars, context) => {
-      if (context?.previousCart) {
-        queryClient.setQueryData(["cart"], context.previousCart);
-      }
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-    },
-  });
-
-  /* ================= TOTAL ================= */
-  const total = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
-  /* ================= LOADING ================= */
   if (isLoading) {
-    return (
-      <div className="p-6 text-center text-gray-500">
-        Loading cart...
-      </div>
-    );
+    return <div className="p-6 text-center">Loading cart...</div>;
   }
 
-  /* ================= EMPTY ================= */
-  if (items.length === 0) {
-    return (
-      <div className="p-6 text-center space-y-4">
-        <h2 className="text-xl font-bold">Your cart is empty</h2>
+  if (isError) {
+    return <div className="p-6 text-center text-red-500">Failed to load cart</div>;
+  }
 
-        <Button onClick={() => navigate("/buyer/products")}>
-          Go Shopping
-        </Button>
-      </div>
-    );
+  if (!items.length) {
+    return <EmptyCartState />;
   }
 
   /* ================= UI ================= */
+
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
-
       <PageHeader title="Shopping Cart" />
 
       {/* ITEMS */}
       <div className="space-y-4">
+        {enrichedItems.map((item) => (
+          <Card key={item.productId} className="p-4">
+            <div className="flex gap-4">
+              <img
+                src={item.image}
+                className="w-24 h-24 object-cover rounded border"
+              />
 
-        {items.map((item: CartItem) => (
+              <div className="flex-1 space-y-2">
+                <h2 className="font-bold">{item.title}</h2>
 
-<Card
-  key={item.id}
-  className="p-3 flex flex-col gap-3"
->
+                <p className="text-gray-500 text-sm">{item.category}</p>
 
-  <div className="flex items-center justify-between">
+                <p className="font-semibold">
+                  ₦{item.price.toLocaleString()}
+                </p>
 
-    {/* LEFT */}
-    <div className="flex items-center gap-3">
+                {/* QTY */}
+                <div className="flex gap-3 items-center">
+                  <button
+                    onClick={() =>
+                      updateQty.mutate({
+                        productId: item.productId,
+                        quantity: Math.max(1, item.quantity - 1),
+                      })
+                    }
+                  >
+                    -
+                  </button>
 
-      {/* IMAGE (same pattern) */}
-      <div className="w-20 aspect-[4/3] bg-gray-100 rounded overflow-hidden flex items-center justify-center">
-        <img
-          src={item.image}
-          className="w-full h-full object-contain"
-        />
-      </div>
+                  <span>{item.quantity}</span>
 
-      <div>
-        <h2 className="font-semibold line-clamp-1">
-          {item.title}
-        </h2>
+                  <button
+                    onClick={() =>
+                      updateQty.mutate({
+                        productId: item.productId,
+                        quantity: item.quantity + 1,
+                      })
+                    }
+                  >
+                    +
+                  </button>
+                </div>
 
-        <p className="text-sm text-gray-500">
-          ₦{item.price.toLocaleString()}
-        </p>
-      </div>
-
-    </div>
-
-    {/* QTY */}
-    <div className="flex items-center gap-2">
-
-      <button
-        onClick={() =>
-          updateQtyMutation.mutate({
-            id: item.id,
-            quantity: item.quantity - 1,
-          })
-        }
-        className="px-2 bg-gray-200 rounded"
-      >
-        -
-      </button>
-
-      <span>{item.quantity}</span>
-
-      <button
-        onClick={() =>
-          updateQtyMutation.mutate({
-            id: item.id,
-            quantity: item.quantity + 1,
-          })
-        }
-        className="px-2 bg-gray-200 rounded"
-      >
-        +
-      </button>
-
-    </div>
-
-    {/* REMOVE */}
-    <button
-      onClick={() => removeMutation.mutate(item.id)}
-      className="text-red-500 text-sm"
-    >
-      Remove
-    </button>
-
-  </div>
-
-</Card>
-
+                <Button
+                  variant="danger"
+                  onClick={() => removeItem.mutate(item.productId)}
+                >
+                  Remove
+                </Button>
+              </div>
+            </div>
+          </Card>
         ))}
-
       </div>
 
       {/* SUMMARY */}
-      <Card>
-        <div className="flex justify-between font-bold text-lg">
+      <Card className="p-4 space-y-4">
+        <div className="flex justify-between font-bold">
           <span>Total</span>
           <span>₦{total.toLocaleString()}</span>
         </div>
 
-        <div className="flex gap-3 mt-4">
-
-          <Button
-            variant="danger"
-            onClick={() => clearMutation.mutate()}
-          >
+        <div className="flex gap-3">
+          <Button variant="danger" onClick={() => clearCart.mutate()}>
             Clear Cart
           </Button>
 
-          <Button onClick={() => navigate("/buyer/checkout")}>
+          <Button onClick={() => navigate("/buyers/checkout")}>
             Checkout
           </Button>
-
         </div>
       </Card>
-
     </div>
   );
 }
+
+
+

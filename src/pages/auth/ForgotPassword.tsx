@@ -1,24 +1,57 @@
 
+
+
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../app/layouts/AuthLayout";
+import { toast } from "sonner";
+import { authService } from "../../services/auth.service";
+import { useUIStore } from "../../store/ui.store";
 
 export default function ForgotPassword() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const startLoading = useUIStore((s) => s.startLoading);
+  const stopLoading = useUIStore((s) => s.stopLoading);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email) return;
+    if (!email) {
+      toast.error("Please enter your email");
+      return;
+    }
 
-    setLoading(true);
+    startLoading();
 
-    // mock API delay
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      console.log("📩 FORGOT PASSWORD:", email);
+
+      const res = await authService.forgotPassword({ email });
+      const data = res.data;
+
+      console.log("✅ FORGOT PASSWORD RESPONSE:", data);
+
+      toast.success(
+        data?.message || "Reset link sent successfully"
+      );
+
       setSent(true);
-    }, 800);
+
+    } catch (err: any) {
+      console.log("❌ FORGOT PASSWORD ERROR:", err?.response?.data);
+
+      toast.error(
+        err?.response?.data?.message ||
+        "Failed to send reset link"
+      );
+
+    } finally {
+      stopLoading();
+    }
   };
 
   return (
@@ -46,6 +79,13 @@ export default function ForgotPassword() {
             <p className="text-white/60 text-sm">
               Check your email inbox and follow the instructions.
             </p>
+
+            <button
+              onClick={() => navigate("/login")}
+              className="mt-4 text-white underline text-sm"
+            >
+              Back to login
+            </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -65,28 +105,29 @@ export default function ForgotPassword() {
 
             {/* BUTTON */}
             <button
-              disabled={loading}
               className="w-full py-3 rounded-xl font-medium
                          bg-gradient-to-r from-blue-600 to-indigo-600
                          hover:opacity-90 transition
-                         text-white disabled:opacity-50"
+                         text-white"
             >
-              {loading ? "Sending..." : "Send Reset Link"}
+              Send Reset Link
             </button>
 
           </form>
         )}
 
         {/* BACK TO LOGIN */}
-        <p className="text-center text-sm text-white/60">
-          Remember your password?{" "}
-          <a
-            href="/login"
-            className="text-white font-medium hover:underline"
-          >
-            Back to login
-          </a>
-        </p>
+        {!sent && (
+          <p className="text-center text-sm text-white/60">
+            Remember your password?{" "}
+            <span
+              onClick={() => navigate("/login")}
+              className="text-white font-medium cursor-pointer hover:underline"
+            >
+              Back to login
+            </span>
+          </p>
+        )}
 
       </div>
     </AuthLayout>

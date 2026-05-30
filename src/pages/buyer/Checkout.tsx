@@ -1,254 +1,901 @@
 
 
+import { useState, useMemo, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
-
+import { buyerService } from "../../services/buyer.api.service";
 import { useCartStore } from "../../store/cart.store";
-import { placeOrder } from "../../services/buyer.service";
-import { PageHeader } from "../../components/ui/PageHeader";
+import { useAuthStore } from "../../store/auth.store";
+import { useCheckout } from "../../hooks/buyer/useCheckout";
+import { getBuyerProductByIdAPI } from "../../api/user/buyer.api";
 
-/* ================= TYPES ================= */
-type PaymentMethod = "card" | "cash" | "transfer" | "giftcard";
+import { states } from "../../data/states";
+import { townsByState } from "../../data/towns";
+
+type DeliveryMode = "vendor" | "office" | "home" | null;
+type Step = 1 | 2 | 3 | 4;
+
+type PickupCenter = {
+  _id: string;
+  name: string;
+  state: string;
+  town: string;
+  address: string;
+  phone: string;
+  isActive: boolean;
+  isMainHub: boolean;
+};
 
 export default function Checkout() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  const items = useCartStore((s) => s.items);
 
-  const items = useCartStore((state) => state.items);
-  const clearCart = useCartStore((state) => state.clearCart);
-
-  const total = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
+  const removeFromCart = useCartStore(
+    (s) => s.removeFromCart
   );
 
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>("card");
-
-  /* ================= GIFT CARD CHECK ================= */
-  const canUseGiftCard = items.every(
-    (item) => item.acceptsGiftCard !== false
-  );
-
-  /* ================= MUTATION ================= */
-  const { mutate, isPending } = useMutation({
-    mutationFn: placeOrder,
-
-    onSuccess: (data) => {
-      clearCart();
-
-      queryClient.invalidateQueries({
-        queryKey: ["buyer-orders"],
-      });
-
-      toast.success("Order placed successfully 🚀");
-
-      navigate("/buyer/order-success", {
-        state: { orderId: data.orderId },
-      });
-    },
-
-    onError: () => {
-      toast.error("Failed to place order. Try again.");
-    },
+  const { data: productsRaw = [] } = useQuery({
+    queryKey: ["products"],
+    queryFn: buyerService.getProducts,
   });
 
-  /* ================= EMPTY CART ================= */
-  if (items.length === 0) {
-    return (
-      <div className="p-6 text-center">
-        <h2 className="text-xl font-bold">
-          Your cart is empty 🛒
-        </h2>
+  const products = Array.isArray(productsRaw)
+    ? productsRaw
+    : (productsRaw as any)?.data ?? [];
 
-        <button
-          onClick={() => navigate("/buyer/home")}
-          className="mt-4 bg-black text-white px-4 py-2 rounded"
-        >
-          Start Shopping
-        </button>
-      </div>
-    );
-  }
+  const [step, setStep] = useState<Step>(1);
 
-  /* ================= PLACE ORDER ================= */
-  const handlePlaceOrder = () => {
-    if (address.trim().length < 5) {
-      toast.error("Enter a valid address");
-      return;
+  const [deliveryMode, setDeliveryMode] =
+    useState<DeliveryMode>(null);
+
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const [selectedState, setSelectedState] =
+    useState("");
+
+  const [selectedTown, setSelectedTown] =
+    useState("");
+
+  const [vendorInfo, setVendorInfo] =
+    useState<{
+      state: string;
+      town: string;
+    } | null>(null);
+
+  /* PICKUP CENTERS */
+  const [pickupCenters, setPickupCenters] =
+    useState<PickupCenter[]>([]);
+
+  const [
+    selectedPickupCenter,
+    setSelectedPickupCenter,
+  ] = useState<PickupCenter | null>(null);
+
+  /* FEES */
+  const [pickupFee, setPickupFee] =
+    useState(0);
+
+  /* AUTO FILL PHONE */
+  useEffect(() => {
+    if (user?.phone) {
+      setPhone(user.phone);
     }
+  }, [user]);
 
-    if (city.trim().length < 2) {
-      toast.error("Enter your city/state");
-      return;
-    }
+  /* FETCH VENDOR */
+  useEffect(() => {
+    const fetchVendor = async () => {
+      if (!items.length) return;
 
-    if (paymentMethod === "giftcard" && !canUseGiftCard) {
-      toast.error("Some items do not accept gift card");
-      return;
-    }
+      try {
+        const firstItem = items[0] as any;
 
-    const orderPayload = {
-      address,
-      city,
-      paymentMethod,
+        const product =
+          await getBuyerProductByIdAPI(
+            firstItem.productId
+          );
 
-      items: items.map((item) => ({
-        productId: item.id,
-        title: item.title,
-        price: item.price,
-        quantity: item.quantity,
-      })),
+        const business = product?.businessId;
 
-      total,
+        setVendorInfo({
+          state:
+            business?.businessAddress?.state ??
+            "Unknown State",
+
+          town:
+            business?.businessAddress?.town ??
+            "Unknown Town",
+        });
+
+        /* PICKUP DELIVERY FEE */
+        if (
+          selectedState &&
+          Array.isArray(product?.deliveryRules)
+        ) {
+          const matchedRule =
+            product.deliveryRules.find(
+              (rule: any) =>
+                rule.state
+                  ?.toLowerCase()
+                  .trim() ===
+                selectedState
+                  ?.toLowerCase()
+                  .trim()
+            );
+
+          setPickupFee(
+            matchedRule?.price || 0
+          );
+        }
+      } catch {
+        setVendorInfo({
+          state: "Unknown State",
+          town: "Unknown Town",
+        });
+
+        setPickupFee(0);
+      }
     };
 
-    mutate(orderPayload);
-  };
+    fetchVendor();
+  }, [items, selectedState]);
 
-  /* ================= PAYMENT METHODS ================= */
-  const paymentMethods: PaymentMethod[] = [
-    "card",
-    "cash",
-    "transfer",
-    "giftcard",
-  ];
+  /* FETCH PICKUP CENTERS */
+  useEffect(() => {
+    const fetchPickupCenters =
+      async () => {
+        if (!selectedState) {
+          setPickupCenters([]);
+          return;
+        }
 
-  const getLabel = (method: PaymentMethod) => {
-    switch (method) {
-      case "card":
-        return "💳 Card Payment";
-      case "cash":
-        return "💵 Cash on Delivery";
-      case "transfer":
-        return "🏦 Bank Transfer";
-      case "giftcard":
-        return "🎁 Go-Shopping Gift Card";
+        try {
+          const response = await fetch(
+            `/pickup-center/get-state-pickup-centers/${selectedState.toLowerCase()}`
+          );
+
+          const data = await response.json();
+
+          if (data?.success) {
+            setPickupCenters(data.data || []);
+          }
+        } catch (error) {
+          console.log(error);
+          setPickupCenters([]);
+        }
+      };
+
+    fetchPickupCenters();
+  }, [selectedState]);
+
+  /* CHECKOUT */
+  const { placeOrder, isPending } =
+    useCheckout({
+      address,
+      city: selectedTown,
+      contactPhone: phone,
+      deliveryMode,
+    });
+
+  /* ENRICH ITEMS */
+  const enrichedItems = useMemo(() => {
+    if (
+      !Array.isArray(items) ||
+      !Array.isArray(products)
+    )
+      return [];
+
+    return items.map((cartItem) => {
+      const product = products.find(
+        (p: any) =>
+          (p._id || p.id) ===
+          cartItem.productId
+      );
+
+      return {
+        productId: cartItem.productId,
+        quantity: cartItem.quantity,
+        name: product?.name ?? "Product",
+        price: product?.price ?? 0,
+        image:
+          product?.media?.[0]?.url ??
+          "/placeholder.png",
+      };
+    });
+  }, [items, products]);
+
+  /* TOTAL */
+  const total = useMemo(() => {
+    return enrichedItems.reduce(
+      (sum, item) =>
+        sum +
+        item.price * item.quantity,
+      0
+    );
+  }, [enrichedItems]);
+
+  /* HOME DELIVERY FEE */
+  const homeDeliveryFee = useMemo(() => {
+    if (deliveryMode !== "home")
+      return 0;
+
+    if (!selectedState) return 0;
+
+    if (!vendorInfo) return 0;
+
+    /* SAME STATE */
+    if (
+      selectedState.toLowerCase() ===
+      vendorInfo.state.toLowerCase()
+    ) {
+      return 2000;
     }
+
+    /* DIFFERENT STATE */
+    return 4000;
+  }, [
+    deliveryMode,
+    selectedState,
+    vendorInfo,
+  ]);
+
+  /* FINAL DELIVERY FEE */
+  const deliveryFee = useMemo(() => {
+    if (deliveryMode === "home") {
+      return homeDeliveryFee;
+    }
+
+    if (deliveryMode === "office") {
+      return pickupFee;
+    }
+
+    return 0;
+  }, [
+    deliveryMode,
+    homeDeliveryFee,
+    pickupFee,
+  ]);
+
+  const grandTotal =
+    total + deliveryFee;
+
+  /* VALIDATION */
+  const canGoNextStep = () => {
+    if (step === 1)
+      return !!deliveryMode;
+
+    if (step === 2) {
+      /* PICKUP CENTER */
+      if (deliveryMode === "office") {
+        return (
+          selectedState.length > 1 &&
+          selectedPickupCenter !==
+            null &&
+          phone.length >= 8
+        );
+      }
+
+      /* HOME DELIVERY */
+      if (deliveryMode === "home") {
+        return (
+          address.length > 4 &&
+          selectedState.length > 1 &&
+          selectedTown.length > 1 &&
+          phone.length >= 8
+        );
+      }
+    }
+
+    return true;
   };
 
-  /* ================= UI ================= */
+  const next = () => {
+    if (!canGoNextStep()) return;
+
+    setStep((s) =>
+      s < 4
+        ? ((s + 1) as Step)
+        : s
+    );
+  };
+
+  const back = () => {
+    setStep((s) =>
+      s > 1
+        ? ((s - 1) as Step)
+        : s
+    );
+  };
+
+  const handlePlaceOrder =
+    async () => {
+      if (!items.length) return;
+
+      await placeOrder();
+    };
+
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <PageHeader title="Checkout" />
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-      <div className="grid md:grid-cols-2 gap-6">
+        {/* LEFT */}
+        <div className="lg:col-span-2 space-y-6">
 
-        {/* ================= LEFT ================= */}
-        <div className="space-y-4">
+          {/* HEADER */}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Checkout
+            </h1>
 
-          <h2 className="font-semibold">Delivery Details</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Complete your order
+              securely
+            </p>
+          </div>
 
-          <input
-            type="text"
-            placeholder="Full Address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="w-full border p-3 rounded-xl"
-          />
+          {/* STEPS */}
+          <div className="flex items-center gap-3 overflow-x-auto pb-1">
 
-          <input
-            type="text"
-            placeholder="City / State"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="w-full border p-3 rounded-xl"
-          />
-
-          {/* ================= PAYMENT ================= */}
-          <h2 className="font-semibold mt-4">
-            Payment Method
-          </h2>
-
-          <div className="space-y-2">
-            {paymentMethods.map((method) => {
-              const isDisabled =
-                method === "giftcard" && !canUseGiftCard;
+            {[
+              "Delivery",
+              "Address",
+              "Summary",
+              "Payment",
+            ].map((label, index) => {
+              const current =
+                index + 1;
 
               return (
                 <div
-                  key={method}
-                  onClick={() => {
-                    if (isDisabled) return;
-                    setPaymentMethod(method);
-                  }}
-                  className={`p-3 border rounded-xl transition
-                    ${
-                      paymentMethod === method
-                        ? "border-black bg-gray-100"
-                        : ""
-                    }
-                    ${
-                      isDisabled
-                        ? "opacity-50 cursor-not-allowed"
-                        : "cursor-pointer"
-                    }
-                  `}
+                  key={label}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm whitespace-nowrap transition-all ${
+                    step === current
+                      ? "bg-black text-white border-black"
+                      : "bg-white text-gray-500"
+                  }`}
                 >
-                  {getLabel(method)}
+                  <div
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                      step === current
+                        ? "bg-white text-black"
+                        : "bg-gray-100 text-gray-500"
+                    }`}
+                  >
+                    {current}
+                  </div>
 
-                  {/* 🚨 Warning */}
-                  {method === "giftcard" && !canUseGiftCard && (
-                    <p className="text-xs text-red-500 mt-1">
-                      Some items do not support gift card
-                    </p>
-                  )}
+                  <span>{label}</span>
                 </div>
               );
             })}
           </div>
+
+          {/* CARD */}
+          <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 md:p-8">
+
+            {/* STEP 1 */}
+            {step === 1 && (
+              <div className="space-y-6">
+
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Choose Delivery
+                    Method
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  {/* PICKUP */}
+                  <button
+                    onClick={() =>
+                      setDeliveryMode(
+                        "office"
+                      )
+                    }
+                    className={`border rounded-2xl p-5 text-left transition-all ${
+                      deliveryMode ===
+                      "office"
+                        ? "border-black bg-black text-white"
+                        : "bg-white hover:border-gray-400"
+                    }`}
+                  >
+                    <h3 className="font-semibold text-base">
+                      Pickup Center
+                    </h3>
+
+                    <p className="text-sm opacity-70 mt-2">
+                      Collect your
+                      package from a
+                      pickup center
+                    </p>
+                  </button>
+
+                  {/* HOME */}
+                  <button
+                    onClick={() =>
+                      setDeliveryMode(
+                        "home"
+                      )
+                    }
+                    className={`border rounded-2xl p-5 text-left transition-all ${
+                      deliveryMode ===
+                      "home"
+                        ? "border-black bg-black text-white"
+                        : "bg-white hover:border-gray-400"
+                    }`}
+                  >
+                    <h3 className="font-semibold text-base">
+                      Home Delivery
+                    </h3>
+
+                    <p className="text-sm opacity-70 mt-2">
+                      Delivered to
+                      your address
+                    </p>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2 */}
+            {step === 2 && (
+              <div className="space-y-6">
+
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Delivery Details
+                  </h2>
+                </div>
+
+                <div className="space-y-5">
+
+                  {/* STATE */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                      State
+                    </label>
+
+                    <select
+                      value={
+                        selectedState
+                      }
+                      onChange={(e) => {
+                        setSelectedState(
+                          e.target.value
+                        );
+
+                        setSelectedTown(
+                          ""
+                        );
+
+                        setSelectedPickupCenter(
+                          null
+                        );
+                      }}
+                      className="border border-gray-200 rounded-xl p-3 w-full"
+                    >
+                      <option value="">
+                        Select State
+                      </option>
+
+                      {states.map(
+                        (state) => (
+                          <option
+                            key={
+                              state.id
+                            }
+                            value={
+                              state.name
+                            }
+                          >
+                            {
+                              state.name
+                            }
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+
+                  {/* PICKUP CENTER */}
+                  {deliveryMode ===
+                    "office" && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-2 block">
+                        Pickup Center
+                      </label>
+
+                      <select
+                        value={
+                          selectedPickupCenter?._id ||
+                          ""
+                        }
+                        onChange={(
+                          e
+                        ) => {
+                          const center =
+                            pickupCenters.find(
+                              (
+                                c
+                              ) =>
+                                c._id ===
+                                e
+                                  .target
+                                  .value
+                            );
+
+                          setSelectedPickupCenter(
+                            center ||
+                              null
+                          );
+                        }}
+                        className="border border-gray-200 rounded-xl p-3 w-full"
+                      >
+                        <option value="">
+                          Select Pickup
+                          Center
+                        </option>
+
+                        {pickupCenters.map(
+                          (
+                            center
+                          ) => (
+                            <option
+                              key={
+                                center._id
+                              }
+                              value={
+                                center._id
+                              }
+                            >
+                              {
+                                center.name
+                              }{" "}
+                              -{" "}
+                              {
+                                center.town
+                              }
+                            </option>
+                          )
+                        )}
+                      </select>
+
+                      {selectedPickupCenter && (
+                        <div className="mt-3 p-4 rounded-xl bg-gray-50 border border-gray-100 text-sm">
+                          <p>
+                            <strong>
+                              Address:
+                            </strong>{" "}
+                            {
+                              selectedPickupCenter.address
+                            }
+                          </p>
+
+                          <p className="mt-1">
+                            <strong>
+                              Phone:
+                            </strong>{" "}
+                            {
+                              selectedPickupCenter.phone
+                            }
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* HOME DELIVERY */}
+                  {deliveryMode ===
+                    "home" && (
+                    <>
+                      {/* TOWN */}
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">
+                          Town
+                        </label>
+
+                        <select
+                          value={
+                            selectedTown
+                          }
+                          onChange={(
+                            e
+                          ) =>
+                            setSelectedTown(
+                              e
+                                .target
+                                .value
+                            )
+                          }
+                          disabled={
+                            !selectedState
+                          }
+                          className="border border-gray-200 rounded-xl p-3 w-full"
+                        >
+                          <option value="">
+                            Select Town
+                          </option>
+
+                          {townsByState[
+                            selectedState
+                          ]?.map(
+                            (
+                              town
+                            ) => (
+                              <option
+                                key={
+                                  town
+                                }
+                                value={
+                                  town
+                                }
+                              >
+                                {
+                                  town
+                                }
+                              </option>
+                            )
+                          )}
+                        </select>
+                      </div>
+
+                      {/* ADDRESS */}
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">
+                          Delivery
+                          Address
+                        </label>
+
+                        <input
+                          className="border border-gray-200 rounded-xl p-3 w-full"
+                          value={
+                            address
+                          }
+                          onChange={(
+                            e
+                          ) =>
+                            setAddress(
+                              e
+                                .target
+                                .value
+                            )
+                          }
+                          placeholder="Enter full address"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* PHONE */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                      Phone Number
+                    </label>
+
+                    <input
+                      className="border border-gray-200 rounded-xl p-3 w-full"
+                      value={phone}
+                      onChange={(e) =>
+                        setPhone(
+                          e.target.value
+                        )
+                      }
+                      placeholder="08012345678"
+                    />
+                  </div>
+
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3 */}
+            {step === 3 && (
+              <div className="space-y-4">
+
+                <h2 className="text-xl font-semibold">
+                  Order Summary
+                </h2>
+
+                {enrichedItems.map(
+                  (item) => (
+                    <div
+                      key={
+                        item.productId
+                      }
+                      className="flex items-center justify-between border rounded-2xl p-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={
+                            item.image
+                          }
+                          className="w-16 h-16 rounded-xl object-cover border"
+                        />
+
+                        <div>
+                          <p className="font-medium">
+                            {
+                              item.name
+                            }
+                          </p>
+
+                          <p className="text-sm text-gray-500">
+                            Qty:{" "}
+                            {
+                              item.quantity
+                            }
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-2">
+                        <p className="font-semibold text-sm">
+                          ₦
+                          {(
+                            item.price *
+                            item.quantity
+                          ).toLocaleString()}
+                        </p>
+
+                        <button
+                          onClick={() =>
+                            removeFromCart(
+                              item.productId
+                            )
+                          }
+                          className="text-xs text-red-500"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            )}
+
+            {/* STEP 4 */}
+            {step === 4 && (
+              <div className="space-y-6">
+
+                <h2 className="text-xl font-semibold">
+                  Confirm Order
+                </h2>
+
+                <button
+                  onClick={
+                    handlePlaceOrder
+                  }
+                  disabled={isPending}
+                  className="w-full bg-black text-white py-4 rounded-2xl"
+                >
+                  {isPending
+                    ? "Processing..."
+                    : "Place Order"}
+                </button>
+              </div>
+            )}
+
+            {/* NAVIGATION */}
+            <div className="flex items-center justify-between pt-6 mt-8 border-t">
+
+              <button
+                onClick={back}
+                disabled={step === 1}
+                className="px-5 py-2.5 border rounded-xl"
+              >
+                Back
+              </button>
+
+              {step < 4 && (
+                <button
+                  onClick={next}
+                  disabled={
+                    !canGoNextStep()
+                  }
+                  className="px-6 py-2.5 bg-black text-white rounded-xl"
+                >
+                  Continue
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* ================= RIGHT ================= */}
-        <div className="border p-4 rounded-2xl shadow-sm">
+        {/* RIGHT */}
+        <div className="hidden lg:block">
 
-          <h2 className="font-semibold mb-3">
-            Order Summary
-          </h2>
+          <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm sticky top-6">
 
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="flex justify-between text-sm"
-              >
-                <span>
-                  {item.title} × {item.quantity}
+            <h2 className="font-semibold text-xl text-gray-900 mb-6">
+              Order Summary
+            </h2>
+
+            <div className="space-y-4">
+
+              {enrichedItems.map(
+                (item) => (
+                  <div
+                    key={
+                      item.productId
+                    }
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={
+                          item.image
+                        }
+                        className="w-14 h-14 rounded-xl object-cover border"
+                      />
+
+                      <div>
+                        <p className="text-sm font-medium">
+                          {
+                            item.name
+                          }
+                        </p>
+
+                        <p className="text-xs text-gray-500 mt-1">
+                          Qty:{" "}
+                          {
+                            item.quantity
+                          }
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="font-semibold text-sm">
+                      ₦
+                      {(
+                        item.price *
+                        item.quantity
+                      ).toLocaleString()}
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
+
+            {/* TOTALS */}
+            <div className="space-y-3 mt-6 pt-6 border-t border-gray-100">
+
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">
+                  Subtotal
                 </span>
 
-                <span>
-                  ₦{(
-                    item.price * item.quantity
-                  ).toLocaleString()}
+                <span className="font-medium">
+                  ₦
+                  {total.toLocaleString()}
                 </span>
               </div>
-            ))}
+
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">
+                  Delivery Fee
+                </span>
+
+                <span className="font-medium">
+                  ₦
+                  {deliveryFee.toLocaleString()}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-lg font-bold pt-4 border-t border-gray-100">
+                <span>Total</span>
+
+                <span>
+                  ₦
+                  {grandTotal.toLocaleString()}
+                </span>
+              </div>
+            </div>
           </div>
-
-          <hr className="my-3" />
-
-          <div className="flex justify-between font-bold text-lg">
-            <span>Total:</span>
-            <span>₦{total.toLocaleString()}</span>
-          </div>
-
-          <button
-            onClick={handlePlaceOrder}
-            disabled={isPending}
-            className={`w-full mt-4 py-3 rounded-xl text-white font-medium ${
-              isPending
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-black"
-            }`}
-          >
-            {isPending ? "Processing..." : "Place Order"}
-          </button>
         </div>
+
       </div>
     </div>
   );

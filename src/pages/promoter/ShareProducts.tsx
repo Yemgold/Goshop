@@ -1,4 +1,6 @@
 
+
+
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import type { Order } from "../../types/rider.types";
@@ -7,29 +9,46 @@ const ShareProducts: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    const stored = JSON.parse(
-      localStorage.getItem("orders") || "[]"
-    ) as Order[];
+    try {
+      const stored = localStorage.getItem("orders");
 
-    setOrders(stored);
+      if (!stored) {
+        setOrders([]);
+        return;
+      }
+
+      const parsed = JSON.parse(stored);
+
+      if (Array.isArray(parsed)) {
+        setOrders(parsed as Order[]);
+      } else {
+        setOrders([]);
+      }
+    } catch (error) {
+      console.error("Failed to parse orders from localStorage:", error);
+      setOrders([]);
+    }
   }, []);
 
   const copyShareLink = (order: Order) => {
     const link = `${window.location.origin}/buyer/product/${order.id}`;
 
-    navigator.clipboard.writeText(link);
+    if (!navigator.clipboard) {
+      toast.error("Clipboard not supported");
+      return;
+    }
 
-    toast.success("Product link copied 📎");
+    navigator.clipboard
+      .writeText(link)
+      .then(() => toast.success("Product link copied 📎"))
+      .catch(() => toast.error("Failed to copy link"));
   };
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
-
       {/* HEADER */}
       <div>
-        <h1 className="text-2xl font-bold">
-          Share Products
-        </h1>
+        <h1 className="text-2xl font-bold">Share Products</h1>
         <p className="text-sm text-gray-500">
           Share product links with customers or riders
         </p>
@@ -44,16 +63,13 @@ const ShareProducts: React.FC = () => {
 
       {/* PRODUCT LIST */}
       <div className="space-y-4">
-
         {orders.map((order) => (
           <div
             key={order.id}
             className="bg-white border rounded-2xl p-4 shadow-sm hover:shadow-md transition"
           >
-
             {/* TOP ROW */}
             <div className="flex justify-between items-start">
-
               <div>
                 <h2 className="font-semibold">
                   Product #{order.id}
@@ -65,14 +81,12 @@ const ShareProducts: React.FC = () => {
               </div>
 
               <p className="font-bold">
-                ₦{order.total.toLocaleString()}
+                ₦{Number(order.total ?? 0).toLocaleString()}
               </p>
-
             </div>
 
             {/* ACTIONS */}
             <div className="mt-4 flex gap-3">
-
               <button
                 onClick={() => copyShareLink(order)}
                 className="flex-1 bg-black text-white py-2 rounded-xl font-medium"
@@ -91,12 +105,9 @@ const ShareProducts: React.FC = () => {
               >
                 Preview
               </button>
-
             </div>
-
           </div>
         ))}
-
       </div>
     </div>
   );

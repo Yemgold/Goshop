@@ -1,18 +1,43 @@
 
 
 
-
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+
 import { StatCard } from "../../components/ui/StatCard";
 import { DashboardGrid } from "../../components/ui/DashboardGrid";
 import { SectionCard } from "../../components/ui/SectionCard";
-import { Button } from "../../components/ui/Button";
 
 import { useVendorDashboard } from "../../hooks/vendor/useVendorDashboard";
+import { useAuthStore } from "../../store/auth.store";
+import { getRoleRoute } from "../../utils/roleRedirect";
+
+import CreatePhysicalProductModal from "../../components/product/CreateProductModal";
+import CreateDigitalProductModal from "../../components/product/CreateDigitalProductModal";
+
+import { Button } from "../../components/ui/Button";
+
+
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { data, isLoading, isError } = useVendorDashboard();
+
+  const currentRole = useAuthStore((s) => s.user?.activeRole);
+
+  const [openPhysicalModal, setOpenPhysicalModal] = useState(false);
+  const [openDigitalModal, setOpenDigitalModal] = useState(false);
+
+  const user = useAuthStore((state) => state.user);
+
+  const recentOrders = data?.recentOrders ?? [];
+
+  /* ================= ROLE REDIRECT ================= */
+  useEffect(() => {
+    if (currentRole && currentRole !== "vendor") {
+      navigate(getRoleRoute(currentRole));
+    }
+  }, [currentRole, navigate]);
 
   if (isLoading) {
     return <div className="p-6 text-center">Loading...</div>;
@@ -25,34 +50,55 @@ export default function Dashboard() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
 
-      {/* ================= HERO ================= */}
-      <div className="bg-gradient-to-r from-black to-gray-800 text-white p-6 rounded-xl">
+      {/* ================= STORE HERO ================= */}
+         
+         {/* ================= STORE HERO ================= */}
+<SectionCard title="Your Store">
+  <div className="flex flex-col md:flex-row gap-6">
 
-        <h1 className="text-2xl font-bold">
-          Welcome back, {data.vendorName || "Vendor"} 👋
-        </h1>
+    {/* IMAGE */}
+    <div className="w-full md:flex-1">
+      <div className="relative rounded-3xl overflow-hidden shadow-xl">
 
-        <p className="text-sm text-gray-300 mt-1">
-          ₦{data.revenue} revenue • {data.orders} orders • {data.products} products
-        </p>
+        <img
+          src="/images/store.png"
+          className="w-full h-64 md:h-80 object-cover"
+        />
 
-        <div className="flex gap-3 mt-4 flex-wrap">
+        <div className="absolute inset-0 bg-black/40" />
 
-          <Button onClick={() => navigate("/vendor/products")}>
-            Manage Products
-          </Button>
-
-          <Button onClick={() => navigate("/vendor/orders")}>
-            View Orders
-          </Button>
-
-          <Button onClick={() => navigate("/vendor/analytics")}>
-            Analytics
-          </Button>
-
+        <div className="absolute bottom-0 left-0 p-6 text-white">
+          <p className="text-sm text-white/80">
+            Vendor Dashboard
+          </p>
+          <h1 className="text-3xl font-bold">
+            Welcome Back 👋
+          </h1>
         </div>
 
       </div>
+    </div>
+
+    {/* ACTION PANEL (ADD BUTTON HERE) */}
+    <div className="w-full md:w-[280px] flex flex-col gap-4 justify-center">
+
+      <Button
+        onClick={() =>
+          navigate(`/viral-feed?ref=${user?.businessId}`)
+        }
+        className="bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold"
+      >
+        🚀 Share My Store
+      </Button>
+
+      <p className="text-xs text-gray-500">
+        Share your store as a TikTok-style feed and drive traffic from WhatsApp, Instagram & ads.
+      </p>
+
+    </div>
+
+  </div>
+</SectionCard>
 
       {/* ================= STATS ================= */}
       <DashboardGrid>
@@ -63,15 +109,12 @@ export default function Dashboard() {
 
       {/* ================= RECENT ORDERS ================= */}
       <SectionCard title="Recent Orders">
-
         <div className="space-y-3">
-
-          {data.recentOrders.map((order) => (
+          {recentOrders.map((order) => (
             <div
               key={order.id}
               className="flex justify-between items-center border-b pb-2"
             >
-
               <div>
                 <p className="font-medium">{order.customer}</p>
                 <p className="text-xs text-gray-500">
@@ -85,13 +128,21 @@ export default function Dashboard() {
                   {order.status || "Processing"}
                 </p>
               </div>
-
             </div>
           ))}
-
         </div>
-
       </SectionCard>
+
+      {/* ================= MODALS ================= */}
+      <CreatePhysicalProductModal
+        open={openPhysicalModal}
+        onClose={() => setOpenPhysicalModal(false)}
+      />
+
+      <CreateDigitalProductModal
+        open={openDigitalModal}
+        onClose={() => setOpenDigitalModal(false)}
+      />
 
     </div>
   );

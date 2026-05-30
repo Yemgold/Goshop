@@ -1,0 +1,64 @@
+
+
+
+import type { UserRole } from "../types/roles";
+
+export type DashboardConfig = {
+  title: string;
+  subtitle?: string;
+  nav: {
+    label: string;
+    to: string;
+  }[];
+  actions?: {
+    label: string;
+    to: string;
+  }[];
+};
+
+export const dashboardConfig: Record<UserRole, DashboardConfig> = {
+  user: {
+    title: "User Dashboard 🛍️",
+    subtitle: "Shop & track orders",
+    nav: [
+      { label: "Home", to: "/buyer/home" },
+      { label: "Shop", to: "/buyer/products" },
+      { label: "Cart", to: "/buyer/cart" },
+    ],
+  },
+
+  vendor: {
+    title: "Vendor Panel 🏪",
+    subtitle: "Manage your store",
+    nav: [
+      { label: "Dashboard", to: "/vendor/dashboard" },
+      { label: "Products", to: "/vendor/products" },
+      { label: "Orders", to: "/vendor/orders" },
+    ],
+    actions: [
+      { label: "Products", to: "/vendor/products" },
+      { label: "Orders", to: "/vendor/orders" },
+      { label: "Analytics", to: "/vendor/analytics" },
+    ],
+  },
+
+  rider: {
+    title: "Rider App 🚴‍♂️",
+    subtitle: "Deliver & earn",
+    nav: [
+      { label: "Jobs", to: "/rider/dashboard" },
+      { label: "Earnings", to: "/rider/earnings" },
+      { label: "History", to: "/rider/jobs" },
+    ],
+  },
+
+  promoter: {
+    title: "Promoter 📢",
+    subtitle: "Share & earn",
+    nav: [
+      { label: "Dashboard", to: "/promoter/dashboard" },
+      { label: "Share", to: "/promoter/share" },
+      { label: "Campaigns", to: "/promoter/campaigns" },
+    ],
+  },
+};

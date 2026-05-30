@@ -1,7 +1,7 @@
 
 
 import { useQuery } from "@tanstack/react-query";
-import { getVendorOrderByIdAPI } from "../../api/vendor/vendor.api";
+import { getVendorOrderByIdAPI } from "../../api/user/vendor.api";
 import { vendorKeys } from "../../query/vendorKeys"; 
 import type { Order } from "../../types/vendor.types";
 

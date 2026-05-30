@@ -1,10 +1,10 @@
 
-import type { ReactNode } from "react";
+// import type { ReactNode } from "react";
 
-export function PageContainer({ children }: { children: ReactNode }) {
-  return (
-    <div className="space-y-6">
-      {children}
-    </div>
-  );
-}
+// export function PageContainer({ children }: { children: ReactNode }) {
+//   return (
+//     <div className="space-y-6">
+//       {children}
+//     </div>
+//   );
+// }

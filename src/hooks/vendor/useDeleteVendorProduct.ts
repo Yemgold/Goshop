@@ -1,55 +1,22 @@
 
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteVendorProductAPI } from "../../api/vendor/vendor.api";
-import { vendorKeys } from "../../query/vendorKeys";
-import type { Product } from "../../types/vendor.types";
+
+import { useMutation } from "@tanstack/react-query";
+
+import { deleteVendorProduct } from "../../services/vendor/vendor.service";
 
 export const useDeleteVendorProduct = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: (id: string) => deleteVendorProductAPI(id),
-
-    /* ================= OPTIMISTIC UPDATE ================= */
-    onMutate: async (id: string) => {
-      // cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: vendorKeys.products(),
-      });
-
-      // snapshot previous state
-      const previousProducts =
-        queryClient.getQueryData<Product[]>(vendorKeys.products());
-
-      // optimistically update cache
-      queryClient.setQueryData<Product[]>(
-        vendorKeys.products(),
-        (old) => {
-          if (!old) return [];
-
-          return old.filter((product) => product.id !== id);
-        }
-      );
-
-      return { previousProducts };
-    },
-
-    /* ================= ROLLBACK ================= */
-    onError: (_err, _id, context) => {
-      if (context?.previousProducts) {
-        queryClient.setQueryData(
-          vendorKeys.products(),
-          context.previousProducts
-        );
-      }
-    },
-
-    /* ================= SYNC SERVER ================= */
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: vendorKeys.products(),
-      });
-    },
+    mutationFn: ({
+      businessId,
+      productId,
+    }: {
+      businessId: string;
+      productId: string;
+    }) =>
+      deleteVendorProduct(
+        businessId,
+        productId
+      ),
   });
-};
+};;

@@ -1,31 +1,63 @@
 
-// services/auth.service.ts
-import apiClient from "../api";
-import type { AuthUser, UserRole } from "../store/auth.store";
 
-export type LoginDTO = {
-  email: string;
-  password: string;
-  role: UserRole;
-};
 
-export type AuthResponse = {
-  user: AuthUser;
-  accessToken: string;
-};
 
+
+import { apiClient } from "../api/core/api.client";
+
+/* ================= AUTH ================= */
 export const authService = {
-  login: async (data: LoginDTO): Promise<AuthResponse> => {
-    const res = await apiClient.post("/auth/login", data);
-    return res.data;
+  login: (payload: { email: string; password: string }) => {
+    return apiClient.post("/auth/login", payload);
   },
 
-  logout: async () => {
-    return apiClient.post("/auth/logout");
+   getMe: () => apiClient.get("/users/me"),
+
+  register: (payload: any) => {
+    return apiClient.post("/auth/register", payload);
   },
 
-  me: async (): Promise<AuthUser> => {
-    const res = await apiClient.get("/auth/me");
-    return res.data;
+  verifyEmail: (token: string) => {
+    return apiClient.get(`/auth/email-verification/${token}`);
   },
+
+  resendVerification: (email: string) => {
+    return apiClient.post("/auth/resend-verification", { email });
+  },
+
+  forgotPassword: (data: { email: string }) => {
+    return apiClient.post("/auth/forgot-password", data);
+  },
+
+  resetPassword: (data: {
+    password: string;
+    confirmPassword: string;
+    token: string;
+  }) => {
+    return apiClient.post("/auth/reset-password", data);
+  },
+
+  /* ================= TOKEN REFRESH ================= */
+  requestAccessToken: () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    if (!refreshToken) {
+      throw new Error("No refresh token found");
+    }
+
+    return apiClient.post("/auth/request-access-token", {
+      refreshToken,
+    });
+  },
+
+  /* ================= LOGOUT ================= */
+  logout: () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    return apiClient.post("/auth/logout", {
+      refreshToken: refreshToken || null,
+    });
+  },
+
+ 
 };

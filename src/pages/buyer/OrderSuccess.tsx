@@ -1,5 +1,6 @@
 
 
+
 import { useNavigate, useLocation } from "react-router-dom";
 
 // UI
@@ -11,17 +12,28 @@ export default function OrderSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ GET ORDER ID FROM NAVIGATION STATE
-  const orderId = location.state?.orderId;
+  // ✅ SUPPORT BOTH OLD & NEW FLOW
+  const orderId =
+    location.state?.orderId ||
+    location.state?.order?._id;
+
+  const paymentUrl =
+    location.state?.paymentUrl;
 
   // SAFETY FALLBACK
   if (!orderId) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center space-y-3">
-          <p className="text-gray-500">No order found</p>
+          <p className="text-gray-500">
+            No order found
+          </p>
 
-          <Button onClick={() => navigate("/buyer/home")}>
+          <Button
+            onClick={() =>
+              navigate("/buyers/home")
+            }
+          >
             Go Home
           </Button>
         </div>
@@ -31,14 +43,14 @@ export default function OrderSuccess() {
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-50">
-
       <Card className="p-6 text-center max-w-md w-full space-y-4">
-
         {/* HEADER */}
         <PageHeader title="Order Successful 🎉" />
 
         {/* SUCCESS ICON */}
-        <div className="text-green-500 text-5xl">✔</div>
+        <div className="text-green-500 text-5xl">
+          ✔
+        </div>
 
         {/* ORDER ID */}
         <p className="text-gray-500">
@@ -53,24 +65,42 @@ export default function OrderSuccess() {
           Your order has been placed successfully. A rider will be assigned shortly.
         </p>
 
+        {/* PAYMENT ACTION (NEW) */}
+        {paymentUrl && (
+          <a
+            href={paymentUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="block"
+          >
+            <Button className="w-full">
+              Pay Now
+            </Button>
+          </a>
+        )}
+
         {/* ACTIONS */}
         <div className="flex flex-col gap-3 pt-2">
-
-          <Button onClick={() => navigate("/buyer/home")}>
+          <Button
+            onClick={() =>
+              navigate("/buyers/home")
+            }
+          >
             Continue Shopping
           </Button>
 
           <Button
             variant="danger"
-            onClick={() => navigate(`/buyer/track/${orderId}`)}
+            onClick={() =>
+              navigate(
+                `/buyers/track/${orderId}`
+              )
+            }
           >
             Track Order
           </Button>
-
         </div>
-
       </Card>
-
     </div>
   );
 }
