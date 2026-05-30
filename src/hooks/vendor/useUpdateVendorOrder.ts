@@ -2,9 +2,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateVendorOrderAPI } from "../../api/user/vendor.api";
 import { vendorKeys } from "../../query/vendorKeys";
 
+
+
+
 type Order = {
   id: string;
-  status: "Processing" | "Accepted" | "Rejected" | "Delivered";
+  status: "processing" | "shipped" | "delivered" | "canceled";
+  // 
+  // "processing" | "accepted" | "rejected" | "delivered";
   riderId: string | null;
   deliveryStatus: string;
 };
@@ -52,9 +57,9 @@ export const useUpdateVendorOrder = (page = 1) => {
                   ...o,
                   status,
                   riderId:
-                    status === "Accepted" ? "RIDER-001" : o.riderId,
+                    status === "shipped" ? "RIDER-001" : o.riderId,
                   deliveryStatus:
-                    status === "Accepted"
+                    status === "shipped"
                       ? "Assigned"
                       : o.deliveryStatus,
                 }

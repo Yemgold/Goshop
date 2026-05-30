@@ -12,7 +12,7 @@ export const useUpdateOrderStatus = () => {
       status,
     }: {
       id: string;
-      status: "Processing" | "Accepted" | "Rejected" | "Delivered";
+      status: "processing" | "shipped" | "delivered" | "canceled";
     }) => updateVendorOrder(id, status),
 
     // 🔥 OPTIMISTIC UPDATE

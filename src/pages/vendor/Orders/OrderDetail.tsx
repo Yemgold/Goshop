@@ -45,10 +45,10 @@ const OrderDetail: React.FC = () => {
   /* ================= UX STATE ================= */
 
   const isAccepting =
-    isPending && variables?.status === "Accepted";
+    isPending && variables?.status === "shipped";
 
   const isRejecting =
-    isPending && variables?.status === "Rejected";
+    isPending && variables?.status === "canceled";
 
   /* ================= ACTIONS ================= */
 
@@ -69,7 +69,7 @@ const OrderDetail: React.FC = () => {
         <StatusBadge status={order.status} />
 
         <p className="text-sm text-gray-500">
-          {new Date(order.date).toLocaleString()}
+          new Date(order.date ?? Date.now()).toLocaleString()
         </p>
       </div>
 
@@ -121,16 +121,16 @@ const OrderDetail: React.FC = () => {
       <div className="flex gap-3">
 
         <Button
-          disabled={isPending || order.status === "Accepted"}
-          onClick={() => handleUpdate("Accepted")}
+          disabled={isPending || order.status === "shipped"}
+          onClick={() => handleUpdate("shipped")}
         >
           {isAccepting ? "Accepting..." : "Accept Order"}
         </Button>
 
         <Button
           variant="danger"
-          disabled={isPending || order.status === "Rejected"}
-          onClick={() => handleUpdate("Rejected")}
+          disabled={isPending || order.status === "canceled"}
+          onClick={() => handleUpdate("canceled")}
         >
           {isRejecting ? "Rejecting..." : "Reject Order"}
         </Button>

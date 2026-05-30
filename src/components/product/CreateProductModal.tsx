@@ -413,13 +413,22 @@ return (
             onChange={(e) => setTags(e.target.value)}
           />
 
-               <input
-              className="w-full h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Product Weight"
-              type="number"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-            />
+             <div className="relative">
+  <input
+    className="w-full h-10 rounded-lg border border-gray-200 px-3 pr-12 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+    placeholder="Product Weight"
+    type="number"
+    min="0"
+    value={weight}
+    onChange={(e) =>
+      setWeight(e.target.value)
+    }
+  />
+
+  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+    kg
+  </span>
+</div>
 
         </div>
 
