@@ -2,7 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { getVendorProductsAPI } from "../../api/user/vendor.api";
 import { vendorKeys } from "../../query/vendorKeys";
 
-import type { Product } from "../../types/vendor.types";
+import type { Product } from "../../types/vendor/vendor.types";
 
 type ProductPage = {
   items: Product[];

@@ -8,7 +8,8 @@ import type {
   VendorOrder,
   Order,
   Product,
-} from "../../types/vendor.types";
+} from "../../types/vendor/vendor.types";
+import type { BusinessShippingRate } from "../../types/vendor/delivery.types";
 
 
 /* ================= DASHBOARD ================= */
@@ -454,3 +455,23 @@ export const getVendorProductPerformanceAPI =
 
     return res.data;
   };
+
+
+
+
+ export const getBusinessShippingRates = async (
+  businessId: string
+): Promise<BusinessShippingRate | null> => {
+  try {
+    const res = await apiClient.get(
+      `/business-shipping-rate/get-business-shipping-rate-all-states/${businessId}`
+    );
+
+    return res.data.data;
+  } catch (err: any) {
+    if (err?.response?.status === 404) {
+      return null; // no rate yet
+    }
+    throw err;
+  }
+};

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { getVendorReturns } from "../../services/vendor/vendor.service";
 
-import type{ VendorReturnsData } from "../../types/vendor.types";
+import type{ VendorReturnsData } from "../../types/vendor/vendor.types";
 
 export const useVendorReturns = () => {
   const [data, setData] =

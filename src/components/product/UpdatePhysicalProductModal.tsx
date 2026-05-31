@@ -8,7 +8,7 @@ import { Button } from "../ui/Button";
 import { useAuthStore } from "../../store/auth.store";
 import { useUpdateVendorProduct } from "../../hooks/vendor/useUpdateVendorProduct";
 
-import type { Product } from "../../types/vendor.types";
+import type { Product } from "../../types/vendor/vendor.types";
 
 interface Props {
   open: boolean;

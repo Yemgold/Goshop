@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 import { getVendorSecurity } from "../../services/vendor/vendor.service";
 
-import type { VendorSecurityData } from "../../types/vendor.types"; 
+import type { VendorSecurityData } from "../../types/vendor/vendor.types"; 
 
 export const useVendorSecurity = () => {
   const [data, setData] =

@@ -30,7 +30,7 @@ import type {
   VendorSecurityData,
   VendorPayoutSettingsData,
   ProductPerformanceData,
-} from "../../types/vendor.types";
+} from "../../types/vendor/vendor.types";
 
 /* ================= ORDERS ================= */
 
@@ -393,3 +393,64 @@ export const getVendorProductPerformance =
   async (): Promise<ProductPerformanceData> => {
     return api.getVendorProductPerformanceAPI();
   };
+
+
+  // ================= SHIPPING RATE =================
+
+export interface CreateBusinessShippingRatePayload {
+  businessId: string;
+  originState: string;
+
+  priceBreakdown: {
+    destinationState: string;
+
+    weightRanges: {
+      min: number;
+      max: number;
+      price: number;
+    }[];
+  }[];
+}
+
+
+
+
+/* ================= TYPES ================= */
+
+export interface CreateWeightRange {
+  min: number;
+  max: number;
+  price: number;
+}
+
+export interface CreatePriceBreakdown {
+  destinationState: string;
+  weightRanges: CreateWeightRange[];
+}
+
+export interface CreateBusinessShippingRatePayload {
+  businessId: string;
+  originState: string;
+  priceBreakdown: CreatePriceBreakdown[];
+}
+
+/* ================= RESPONSE ================= */
+
+export interface BusinessShippingRateResponse {
+  success: boolean;
+  message: string;
+  data: any; // you can replace with BusinessShippingRate type if you want strict typing
+}
+
+/* ================= SERVICE ================= */
+
+export const createBusinessShippingRate = async (
+  payload: CreateBusinessShippingRatePayload
+): Promise<BusinessShippingRateResponse["data"]> => {
+  const res = await apiClient.post(
+    "/business-shipping-rate/create-business-shipping-rate",
+    payload
+  );
+
+  return res.data.data;
+};

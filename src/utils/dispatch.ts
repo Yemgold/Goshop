@@ -1,6 +1,6 @@
 
 
-import type { Order } from "../types/vendor.types"; 
+import type { Order } from "../types/vendor/vendor.types"; 
 import { riders } from "../data/riders";
 import { getTrafficMultiplier } from "./traffic";
 

@@ -143,8 +143,8 @@ export function VendorSidebar({
           icon: <Truck size={18} />,
         },
         {
-          label: "Delivery Zones",
-          path: "/vendor/delivery-zones",
+          label: "Delivery Rate",
+          path: "/vendor/delivery-rate",
           icon: <Truck size={18} />,
         },
       ],

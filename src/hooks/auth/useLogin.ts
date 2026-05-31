@@ -99,15 +99,24 @@ export function useLogin() {
       // ======================
       // 5. STORE AUTH (SINGLE SOURCE OF TRUTH)
       // ======================
+         
       login(
-        {
-          ...user,
-          roles,
-          activeRole,
-          businessId, // ✅ IMPORTANT FIX
-        },
-        accessToken
-      );
+  {
+    ...user,
+
+    roles,
+    activeRole,
+
+    businessId,
+
+    businessName:
+      profile?.business?.businessName,
+
+    businessAddress:
+      profile?.business?.businessAddress,
+  },
+  accessToken
+);
 
       // ======================
       // 6. NAVIGATION

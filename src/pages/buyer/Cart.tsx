@@ -2,6 +2,7 @@
 
 import { useNavigate } from "react-router-dom";
 
+
 import { useCart } from "../../hooks/buyer/useCart";
 import {
   enrichCartItems,
@@ -12,7 +13,10 @@ import {
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { PageHeader } from "../../components/ui/PageHeader";
-import { EmptyCartState } from "../../components/ui/empty-states/EmptyCartState";
+
+// import { CartSkeleton } from "../../components/ui/empty-states/CartSkeleton"; 
+ import { EmptyCartState } from "../../components/ui/empty-states/EmptyCartState";
+
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -34,16 +38,25 @@ export default function Cart() {
 
   /* ================= STATES ================= */
 
-  if (isLoading) {
-    return <div className="p-6 text-center">Loading cart...</div>;
-  }
+  const isInitialLoading = isLoading && !cart;
+  const isEmpty = !isLoading && items.length === 0;
 
   if (isError) {
-    return <div className="p-6 text-center text-red-500">Failed to load cart</div>;
+    return (
+      <div className="p-6 text-center text-red-500">
+        Failed to load cart
+      </div>
+    );
   }
 
-  if (!items.length) {
-    return <EmptyCartState />;
+  // 🔥 FIX: ONLY show loading when NO cached cart exists
+  if (isInitialLoading) {
+    return <EmptyCartState loading={true} hasItems={false} />;
+  }
+
+  // 🔥 FIX: ONLY show empty AFTER loading finishes
+  if (isEmpty) {
+    return <EmptyCartState loading={false} hasItems={false} />;
   }
 
   /* ================= UI ================= */
@@ -52,26 +65,23 @@ export default function Cart() {
     <div className="p-6 max-w-4xl mx-auto space-y-6">
       <PageHeader title="Shopping Cart" />
 
-      {/* ITEMS */}
       <div className="space-y-4">
         {enrichedItems.map((item) => (
           <Card key={item.productId} className="p-4">
             <div className="flex gap-4">
-              <img
-                src={item.image}
-                className="w-24 h-24 object-cover rounded border"
-              />
+              <img src={item.image} className="w-24 h-24 rounded" />
 
               <div className="flex-1 space-y-2">
                 <h2 className="font-bold">{item.title}</h2>
 
-                <p className="text-gray-500 text-sm">{item.category}</p>
+                <p className="text-gray-500 text-sm">
+                  {item.category}
+                </p>
 
                 <p className="font-semibold">
                   ₦{item.price.toLocaleString()}
                 </p>
 
-                {/* QTY */}
                 <div className="flex gap-3 items-center">
                   <button
                     onClick={() =>
@@ -100,7 +110,9 @@ export default function Cart() {
 
                 <Button
                   variant="danger"
-                  onClick={() => removeItem.mutate(item.productId)}
+                  onClick={() =>
+                    removeItem.mutate(item.productId)
+                  }
                 >
                   Remove
                 </Button>
@@ -110,7 +122,6 @@ export default function Cart() {
         ))}
       </div>
 
-      {/* SUMMARY */}
       <Card className="p-4 space-y-4">
         <div className="flex justify-between font-bold">
           <span>Total</span>
@@ -118,11 +129,16 @@ export default function Cart() {
         </div>
 
         <div className="flex gap-3">
-          <Button variant="danger" onClick={() => clearCart.mutate()}>
+          <Button
+            variant="danger"
+            onClick={() => clearCart.mutate()}
+          >
             Clear Cart
           </Button>
 
-          <Button onClick={() => navigate("/buyers/checkout")}>
+          <Button
+            onClick={() => navigate("/buyers/checkout")}
+          >
             Checkout
           </Button>
         </div>
@@ -130,6 +146,13 @@ export default function Cart() {
     </div>
   );
 }
+
+
+
+
+
+
+
 
 
 

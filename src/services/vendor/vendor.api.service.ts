@@ -10,7 +10,8 @@ import type {Order,Product,AnalyticsData,VendorDiscountsData,VendorOrdersData,Ve
   VendorPayoutsData,VendorTransactionsData,VendorTaxesData,VendorCustomersData,
   VendorReviewsData,VendorStoreData,VendorStoreSettings,VendorStoreSettingsData,
   VendorSecurityData,VendorPayoutSettingsData,ProductPerformanceData,
-} from "../../types/vendor.types";
+} from "../../types/vendor/vendor.types";
+import type { CreateBusinessShippingRatePayload } from "./vendor.service";
 
 /* =========================================================
    ORDERS
@@ -411,4 +412,19 @@ export const getVendorProductPerformance =
       `/vendor/product-performance`
     );
     return data;
+  };
+
+
+
+
+  export const createBusinessShippingRate =
+  async (
+    payload: CreateBusinessShippingRatePayload
+  ) => {
+    const res = await apiClient.post(
+      "/business-shipping-rate/create-business-shipping-rate",
+      payload
+    );
+
+    return res.data;
   };

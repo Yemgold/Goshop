@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { getVendorTaxes } from "../../services/vendor/vendor.service";
 
-import type { VendorTaxesData } from "../../types/vendor.types"; 
+import type { VendorTaxesData } from "../../types/vendor/vendor.types"; 
 export const useVendorTaxes = () => {
   const [data, setData] =
     useState<VendorTaxesData | null>(

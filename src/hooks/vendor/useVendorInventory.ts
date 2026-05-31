@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { getVendorInventory } from "../../services/vendor/vendor.service";
-import type{ VendorInventoryData } from "../../types/vendor.types"; 
+import type{ VendorInventoryData } from "../../types/vendor/vendor.types"; 
 
 export const useVendorInventory = () => {
   const [data, setData] =

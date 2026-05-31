@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { getVendorShipping } from "../../services/vendor/vendor.service";
 
-import type{ VendorShippingData } from "../../types/vendor.types"; 
+import type{ VendorShippingData } from "../../types/vendor/vendor.types"; 
 
 export const useVendorShipping = () => {
   const [data, setData] =

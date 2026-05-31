@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { getVendorStore } from "../../services/vendor/vendor.service";
 
-import type { VendorStoreData } from "../../types/vendor.types";
+import type { VendorStoreData } from "../../types/vendor/vendor.types";
 
 export const useVendorStore = () => {
   const [data, setData] =

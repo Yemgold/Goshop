@@ -76,6 +76,8 @@ import Sales from "../../pages/vendor/Sales";
 import Shipping from "../../pages/vendor/Shipping & Delivery/Shipping";
 import DeliveryZones from "../../pages/vendor/Shipping & Delivery/DeliveryZones";
 
+import DeliveryRate from "../../pages/vendor/Shipping & Delivery/DeliveryRate";
+
 import Revenue from "../../pages/vendor/Finace System/Revenue";
 import Payouts from "../../pages/vendor/Finace System/Payouts";
 import Transactions from "../../pages/vendor/Finace System/Transactions";
@@ -285,6 +287,7 @@ export default function AppRouter() {
 
           <Route path="shipping" element={<Shipping />} />
           <Route path="delivery-zones" element={<DeliveryZones />} />
+          <Route path="delivery-rate" element={<DeliveryRate/>} />
 
           <Route path="revenue" element={<Revenue />} />
           <Route path="payouts" element={<Payouts />} />

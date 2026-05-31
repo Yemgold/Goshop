@@ -8,7 +8,7 @@ import { Button } from "../../../components/ui/Button";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { PageHeader } from "../../../components/ui/PageHeader";
 
-import type { Order } from "../../../types/vendor.types";
+import type { Order } from "../../../types/vendor/vendor.types";
 
 import { useOrder } from "../../../hooks/vendor/useOrder"; 
 import { useUpdateVendorOrder } from "../../../hooks/vendor/useUpdateVendorOrder";

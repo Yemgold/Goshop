@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { getVendorDeliveryZones } from "../../services/vendor/vendor.service";
 
-import type{ VendorDeliveryZonesData } from "../../types/vendor.types"; 
+import type{ VendorDeliveryZonesData } from "../../types/vendor/vendor.types"; 
 
 export const useVendorDeliveryZones =
   () => {

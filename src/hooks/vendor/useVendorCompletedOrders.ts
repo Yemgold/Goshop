@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { getVendorCompletedOrders } from "../../services/vendor/vendor.service";
 
-import type{ VendorCompletedOrdersData } from "../../types/vendor.types"; 
+import type{ VendorCompletedOrdersData } from "../../types/vendor/vendor.types"; 
 
 export const useVendorCompletedOrders =
   () => {

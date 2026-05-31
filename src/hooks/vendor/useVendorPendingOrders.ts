@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { getVendorPendingOrders } from "../../services/vendor/vendor.service";
 
-import type{ VendorPendingOrdersData } from "../../types/vendor.types"; 
+import type{ VendorPendingOrdersData } from "../../types/vendor/vendor.types"; 
 
 export const useVendorPendingOrders =
   () => {

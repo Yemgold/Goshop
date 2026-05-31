@@ -18,7 +18,7 @@ import UpdateModal from "../../../components/product/UpdatePhysicalProductModal"
 
 import { useAuthStore } from "../../../store/auth.store";
 
-import type { Product } from "../../../types/vendor.types";
+import type { Product } from "../../../types/vendor/vendor.types";
 
 import { useQueryClient } from "@tanstack/react-query";
 

@@ -36,6 +36,17 @@ export interface AuthUser {
 
   businessId?: string | null;
   businessName?: string;
+
+   businessAddress?: {
+    street?: string;
+    state?: string;
+    country?: string;
+    code?: string;
+    centerLat?: number;
+    centerLng?: number;
+  };
+
+
 }
 
 /* ================= STORE ================= */

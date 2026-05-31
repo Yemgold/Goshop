@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 import { getVendorPayoutSettings } from "../../services/vendor/vendor.service";
 
-import type { VendorPayoutSettingsData } from "../../types/vendor.types";
+import type { VendorPayoutSettingsData } from "../../types/vendor/vendor.types";
 
 export const useVendorPayoutSettings = () => {
   const [data, setData] =
