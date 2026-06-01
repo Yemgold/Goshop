@@ -1,28 +1,26 @@
 
 
+
+
+
+// ================= SHIPPING RATE TYPES =================
+
 export interface WeightRange {
-  _id: string;
   min: number;
   max: number;
   price: number;
 }
 
-export interface PriceBreakdown {
-  _id: string;
-  destinationState: string;
-  weightRanges: WeightRange[];
-}
-
 export interface BusinessShippingRate {
   _id: string;
-
   businessId: string;
-
   originState: string;
-
-  priceBreakdown: PriceBreakdown[];
-
+  destinationState: string;
+  weightRanges: WeightRange[];
   createdAt: string;
-
   updatedAt: string;
 }
+
+/* ================= RESPONSE ================= */
+
+export type BusinessShippingRateResponse = BusinessShippingRate[];

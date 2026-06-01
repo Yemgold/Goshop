@@ -6,7 +6,7 @@ import { apiClient } from "../../api/core/api.client";
 
 import type {Order,Product,AnalyticsData,VendorDiscountsData,VendorOrdersData,VendorSalesData,
   VendorInventoryData,VendorCategoriesData,VendorPendingOrdersData,VendorCompletedOrdersData,
-  VendorReturnsData, VendorShippingData, VendorDeliveryZonesData, VendorRevenueData,
+  VendorReturnsData, VendorDeliveryZonesData, VendorRevenueData,
   VendorPayoutsData,VendorTransactionsData,VendorTaxesData,VendorCustomersData,
   VendorReviewsData,VendorStoreData,VendorStoreSettings,VendorStoreSettingsData,
   VendorSecurityData,VendorPayoutSettingsData,ProductPerformanceData,
@@ -221,11 +221,7 @@ export const updateReturnStatus = async (
    SHIPPING
 ========================================================= */
 
-export const getVendorShipping =
-  async (): Promise<VendorShippingData> => {
-    const { data } = await apiClient.get(`/vendor/shipping`);
-    return data;
-  };
+
 
 export const updateShipmentStatus = async (
   id: string,
@@ -416,7 +412,6 @@ export const getVendorProductPerformance =
 
 
 
-
   export const createBusinessShippingRate =
   async (
     payload: CreateBusinessShippingRatePayload
@@ -428,3 +423,80 @@ export const getVendorProductPerformance =
 
     return res.data;
   };
+
+
+  // //////////////////////////////
+
+
+  
+import type { BusinessShippingRate } from "../../types/vendor/delivery.types";
+
+
+export const getBusinessShippingRates = async (
+  businessId: string
+): Promise<BusinessShippingRate[]> => {
+  const { data } = await apiClient.get(
+    `/business-shipping-rate/get-business-shipping-rate-all-states/${businessId}`
+  );
+
+  console.log("SHIPPING RATE RESPONSE:", data);
+
+  return data.data; // if backend returns { success, data: [...] }
+};
+
+
+// ////////////////////////////////
+ 
+
+/* ================= TYPES ================= */
+
+export type WeightRange = {
+  min: number;
+  max: number | null;
+  price: number;
+};
+
+export type ShippingDocument = {
+  _id: string;
+  businessId: string;
+  originState: string;
+  destinationState: string;
+  weightRanges: WeightRange[];
+};
+
+export type ShippingRateResponse = {
+  success: boolean;
+  message: string;
+  data: ShippingDocument;
+};
+
+/* ================= SERVICE ================= */
+
+export const vendorService = {
+
+
+  /* ========== CHECKOUT RATE (IMPORTANT) ========== */
+  async getShippingRate(
+    businessId: string,
+    destinationState: string,
+    weight: number
+  ) {
+    const { data } = await apiClient.get<ShippingRateResponse>(
+      `/business-shipping-rate/get-business-shipping-rate-per-destination-state/${businessId}/${destinationState}?weight=${weight}`
+    );
+
+    return data.data; // returns matched price document
+  },
+
+  /* ========== FULL DOCUMENT (VENDOR UI) ========== */
+  async getShippingDocumentByBuyerState(
+    businessId: string,
+    buyerState: string
+  ) {
+    const { data } = await apiClient.get<ShippingRateResponse>(
+      `/business-shipping-rate/get-business-shipping-document-per-buyer-state/${businessId}/${buyerState}`
+    );
+
+    return data.data;
+  },
+};

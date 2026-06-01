@@ -116,6 +116,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   /* ================= REAL AUTO LOGIN (BACKEND SYNC) ================= */
   rehydrateAuth: async () => {
+
+
+
+
+
+
+
+    
+
   const token = localStorage.getItem("accessToken");
   if (!token) return;
 
@@ -158,25 +167,68 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       vendor?.businessId ?? vendor?.business_Id ?? null;
 
     const hydratedUser: AuthUser = {
-      id: user.id || user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      
+      
+  id: user.id || user._id,
+  firstName: user.firstName,
+  lastName: user.lastName,
 
-      roles,
-      activeRole,
+  phone: user.phone,
 
-      roleRequests: [],
+  roles,
+  activeRole,
 
-      isVendor: roles.includes("vendor"),
-      isRider: roles.includes("rider"),
-      isPromoter: roles.includes("promoter"),
+  roleRequests: [],
 
-      hasAllPartnerRoles: roles.length > 1,
+  isVendor: roles.includes("vendor"),
+  isRider: roles.includes("rider"),
+  isPromoter: roles.includes("promoter"),
 
-      adminRole: user.adminRole,
+  hasAllPartnerRoles: roles.length > 1,
 
-      businessId,
-      businessName: vendor?.businessName || null,
+  adminRole: user.adminRole,
+
+  businessId,
+  businessName: vendor?.businessName || null,
+
+  
+
+
+
+
+  businessAddress: {
+  street:
+    vendor?.businessAddress?.street ??
+    vendor?.address?.street ??
+    "",
+
+  state:
+    vendor?.businessAddress?.state ??
+    vendor?.address?.state ??
+    "",
+
+  country:
+    vendor?.businessAddress?.country ??
+    vendor?.address?.country ??
+    "",
+
+  code:
+    vendor?.businessAddress?.code ??
+    vendor?.address?.code ??
+    "",
+
+  centerLat:
+    vendor?.businessAddress?.centerLat ??
+    vendor?.address?.centerLat ??
+    0,
+
+  centerLng:
+    vendor?.businessAddress?.centerLng ??
+    vendor?.address?.centerLng ??
+    0,
+},
+
+
     };
 
     set({

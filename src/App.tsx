@@ -1,49 +1,4 @@
 
-// C:\ecomBackup\frontend\src\App.tsx
-
-
-// import { useEffect } from "react";
-// import { useAuthStore } from "./store/auth.store";
-// import AppRouter from "./app/router/AppRouter";
-
-// import { ToastContainer } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-// import Spinner from "./components/Spinner/Spinner";
-// import { useUIStore } from "./store/ui.store";
-
-
-
-// export default function App() {
-//   const hydrate = useAuthStore((state) => state.hydrate);
-
-//    const loading = useUIStore((s) => s.loading);
-
-
-//   useEffect(() => {
-//     hydrate();
-//   }, []);
-
-//   return (
-//     <>
-//       <AppRouter />
-//        {loading && <Spinner />}
-
-//       {/* GLOBAL TOAST SYSTEM */}
-//       <ToastContainer
-//         position="top-right"
-//         autoClose={2000}
-//         hideProgressBar={false}
-//         newestOnTop
-//         closeOnClick
-//         pauseOnHover
-//         theme="light"
-//       />
-//     </>
-//   );
-// }
-
-
-
 
 
 import { useEffect, useState } from "react";

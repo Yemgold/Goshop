@@ -1,4 +1,5 @@
 
+
 // import { useCallback } from "react";
 // import { useMutation, useQueryClient } from "@tanstack/react-query";
 // import { toast } from "react-toastify";
@@ -12,6 +13,11 @@
 
 // type DeliveryMode = "vendor" | "office" | "home";
 
+// type VendorInfo = {
+//   state?: string;
+//   town?: string;
+// };
+
 // type Args = {
 //   deliveryMode: DeliveryMode | null;
 
@@ -19,6 +25,8 @@
 //   city?: string;
 
 //   officeAddress?: string;
+
+//   vendorInfo?: VendorInfo | null;
 
 //   contactPhone: string;
 // };
@@ -28,14 +36,19 @@
 //   address,
 //   city,
 //   officeAddress,
+//   vendorInfo,
 //   contactPhone,
 // }: Args) {
 //   const navigate = useNavigate();
+
 //   const queryClient = useQueryClient();
 
 //   const user = useAuthStore((s) => s.user);
+
 //   const items = useCartStore((s) => s.items);
+
 //   const clearCart = useCartStore((s) => s.clearCart);
+
 //   const cartId = useCartStore((s) => s.cartId);
 
 //   const buyerId = user?.id;
@@ -57,15 +70,21 @@
 //       navigate("/buyers/order-success", {
 //         state: {
 //           orderId: res.data.order._id,
-//           paymentUrl: res.data.paymentIntent.paymentUrl,
+//           paymentUrl:
+//             res.data.paymentIntent.paymentUrl,
 //         },
 //       });
 //     },
 
 //     onError: (error: any) => {
-//       console.log("CHECKOUT ERROR:", error.response?.data);
+//       console.log(
+//         "CHECKOUT ERROR:",
+//         error.response?.data
+//       );
+
 //       toast.error(
-//         error.response?.data?.message || "Checkout failed"
+//         error.response?.data?.message ||
+//           "Checkout failed"
 //       );
 //     },
 //   });
@@ -73,27 +92,88 @@
 //   /* ================= PLACE ORDER ================= */
 
 //   const placeOrder = useCallback(async () => {
-//     if (!buyerId) return toast.error("User not found");
-//     if (!cartId) return toast.error("Cart not found");
-//     if (!items.length) return toast.error("Cart is empty");
-//     if (!deliveryMode)
-//       return toast.error("Select delivery mode");
+//     /* ================= BASIC VALIDATION ================= */
+
+//     if (!buyerId) {
+//       return toast.error("User not found");
+//     }
+
+//     if (!cartId) {
+//       return toast.error("Cart not found");
+//     }
+
+//     if (!items.length) {
+//       return toast.error("Cart is empty");
+//     }
+
+//     if (!deliveryMode) {
+//       return toast.error(
+//         "Select delivery mode"
+//       );
+//     }
+
+//     if (!contactPhone.trim()) {
+//       return toast.error(
+//         "Contact phone is required"
+//       );
+//     }
+
+//     /* ================= HOME DELIVERY VALIDATION ================= */
+
+//     if (deliveryMode === "home") {
+//       if (!address?.trim()) {
+//         return toast.error(
+//           "Delivery address required"
+//         );
+//       }
+
+//       if (!city?.trim()) {
+//         return toast.error("City required");
+//       }
+//     }
+
+//     /* ================= OFFICE PICKUP VALIDATION ================= */
+
+//     if (deliveryMode === "office") {
+//       if (!officeAddress?.trim()) {
+//         return toast.error(
+//           "Office pickup address required"
+//         );
+//       }
+//     }
+
+//     /* ================= BUILD PAYLOAD ================= */
 
 //     const payload = buildCheckoutPayload({
 //       cartId,
+
 //       items,
+
 //       buyerId,
 
 //       deliveryMode,
 
 //       address,
+
 //       city,
+
 //       officeAddress,
+
+//       vendorState:
+//         vendorInfo?.state ?? "Unknown State",
+
+//       vendorTown:
+//         vendorInfo?.town ?? "Unknown Town",
 
 //       contactPhone,
 //     });
 
-//     console.log("FINAL PAYLOAD:", payload);
+//     console.log(
+//       "FINAL CHECKOUT PAYLOAD:",
+//       payload
+//     );
+
+//     /* ================= API REQUEST ================= */
 
 //     await mutation.mutateAsync(payload);
 //   }, [
@@ -104,81 +184,68 @@
 //     address,
 //     city,
 //     officeAddress,
+//     vendorInfo,
 //     contactPhone,
 //     mutation,
 //   ]);
 
 //   return {
 //     placeOrder,
+
 //     isPending: mutation.isPending,
 //   };
 // }
 
 
-
-
-
-
-
-
-
-import { useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 import { checkoutService } from "../../services/checkout.service";
-import { buildCheckoutPayload } from "../../mappers/checkout.mapper";
-
 import { useCartStore } from "../../store/cart.store";
 import { useAuthStore } from "../../store/auth.store";
 
-type DeliveryMode = "vendor" | "office" | "home";
+/* ================= TYPES ================= */
 
-type VendorInfo = {
-  state?: string;
-  town?: string;
+export type CheckoutVendor = {
+  businessId: string;
+
+  items: {
+    productId: string;
+    quantity: number;
+    price: number;
+  }[];
+
+  subtotal: number;
+  shippingFee: number;
+  total: number;
 };
 
-type Args = {
-  deliveryMode: DeliveryMode | null;
+export type CreateOrderPayload = {
+  buyerId: string;
+  deliveryMode: "office" | "home" | null;
 
-  address?: string;
-  city?: string;
-
-  officeAddress?: string;
-
-  vendorInfo?: VendorInfo | null;
+  address: string | null;   // ✅ FIXED (no optional mismatch)
+  city: string | null;     // ✅ FIXED
 
   contactPhone: string;
+
+  vendors: CheckoutVendor[];
+  grandTotal: number;
 };
 
-export function useCheckout({
-  deliveryMode,
-  address,
-  city,
-  officeAddress,
-  vendorInfo,
-  contactPhone,
-}: Args) {
-  const navigate = useNavigate();
+/* ================= HOOK ================= */
 
+export function useCheckout() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const user = useAuthStore((s) => s.user);
-
-  const items = useCartStore((s) => s.items);
-
   const clearCart = useCartStore((s) => s.clearCart);
 
-  const cartId = useCartStore((s) => s.cartId);
-
-  const buyerId = user?.id;
-
-  /* ================= MUTATION ================= */
-
   const mutation = useMutation({
-    mutationFn: checkoutService.placeOrder,
+    mutationFn: (payload: CreateOrderPayload) =>
+      checkoutService.placeOrder(payload),
 
     onSuccess: async (res) => {
       await clearCart();
@@ -192,128 +259,71 @@ export function useCheckout({
       navigate("/buyers/order-success", {
         state: {
           orderId: res.data.order._id,
-          paymentUrl:
-            res.data.paymentIntent.paymentUrl,
+          paymentUrl: res.data.paymentIntent.paymentUrl,
         },
       });
     },
 
     onError: (error: any) => {
-      console.log(
-        "CHECKOUT ERROR:",
-        error.response?.data
-      );
+      console.log("CHECKOUT ERROR:", error.response?.data);
 
       toast.error(
-        error.response?.data?.message ||
-          "Checkout failed"
+        error.response?.data?.message || "Checkout failed"
       );
     },
   });
 
   /* ================= PLACE ORDER ================= */
 
-  const placeOrder = useCallback(async () => {
-    /* ================= BASIC VALIDATION ================= */
+  const placeOrder = async (payload: CreateOrderPayload) => {
+    const buyerId = user?.id;
 
     if (!buyerId) {
-      return toast.error("User not found");
+      toast.error("User not found");
+      return;
     }
 
-    if (!cartId) {
-      return toast.error("Cart not found");
+    if (!payload.vendors?.length) {
+      toast.error("Cart is empty");
+      return;
     }
 
-    if (!items.length) {
-      return toast.error("Cart is empty");
+    if (!payload.deliveryMode) {
+      toast.error("Select delivery mode");
+      return;
     }
 
-    if (!deliveryMode) {
-      return toast.error(
-        "Select delivery mode"
-      );
+    if (!payload.contactPhone?.trim()) {
+      toast.error("Phone number is required");
+      return;
     }
 
-    if (!contactPhone.trim()) {
-      return toast.error(
-        "Contact phone is required"
-      );
-    }
-
-    /* ================= HOME DELIVERY VALIDATION ================= */
-
-    if (deliveryMode === "home") {
-      if (!address?.trim()) {
-        return toast.error(
-          "Delivery address required"
-        );
+    if (payload.deliveryMode === "home") {
+      if (!payload.address) {
+        toast.error("Delivery address required");
+        return;
       }
 
-      if (!city?.trim()) {
-        return toast.error("City required");
+      if (!payload.city) {
+        toast.error("City required");
+        return;
       }
     }
 
-    /* ================= OFFICE PICKUP VALIDATION ================= */
-
-    if (deliveryMode === "office") {
-      if (!officeAddress?.trim()) {
-        return toast.error(
-          "Office pickup address required"
-        );
-      }
-    }
-
-    /* ================= BUILD PAYLOAD ================= */
-
-    const payload = buildCheckoutPayload({
-      cartId,
-
-      items,
-
+    const finalPayload: CreateOrderPayload = {
+      ...payload,
       buyerId,
 
-      deliveryMode,
+      // safety normalization (VERY IMPORTANT)
+      address: payload.address ?? null,
+      city: payload.city ?? null,
+    };
 
-      address,
-
-      city,
-
-      officeAddress,
-
-      vendorState:
-        vendorInfo?.state ?? "Unknown State",
-
-      vendorTown:
-        vendorInfo?.town ?? "Unknown Town",
-
-      contactPhone,
-    });
-
-    console.log(
-      "FINAL CHECKOUT PAYLOAD:",
-      payload
-    );
-
-    /* ================= API REQUEST ================= */
-
-    await mutation.mutateAsync(payload);
-  }, [
-    buyerId,
-    cartId,
-    items,
-    deliveryMode,
-    address,
-    city,
-    officeAddress,
-    vendorInfo,
-    contactPhone,
-    mutation,
-  ]);
+    return mutation.mutateAsync(finalPayload);
+  };
 
   return {
     placeOrder,
-
     isPending: mutation.isPending,
   };
 }

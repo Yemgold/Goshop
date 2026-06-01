@@ -1,22 +1,17 @@
 
 
 import { useQuery } from "@tanstack/react-query";
-
-import { getBusinessShippingRates } from "../../api/user/vendor.api";
+import { getBusinessShippingRates } from "../../services/vendor/vendor.api.service"; 
+import type { BusinessShippingRate } from "../../types/vendor/delivery.types";
 
 export const useBusinessShippingRates = (
   businessId: string
 ) => {
-  return useQuery({
-    queryKey: [
-      "business-shipping-rates",
-      businessId,
-    ],
+  return useQuery<BusinessShippingRate[]>({
+    queryKey: ["business-shipping-rates", businessId],
 
     queryFn: () =>
-      getBusinessShippingRates(
-        businessId
-      ),
+      getBusinessShippingRates(businessId),
 
     enabled: !!businessId,
   });

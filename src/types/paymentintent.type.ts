@@ -17,23 +17,61 @@ export interface CreateOrderItemPayload {
 }
 
 export interface CreateOrderPayload {
-  cartId: string;
+  buyerId: string;
 
-  items: {
-    productId: string;
+  deliveryMode: "office" | "home" | null;
+
+  address: string | null;
+  city: string | null;
+  contactPhone: string;
+
+  vendors: {
     businessId: string;
-    quantity: number;
+
+    items: {
+      productId: string;
+      quantity: number;
+      price: number;
+    }[];
+
+    subtotal: number;
+    shippingFee: number;
+    total: number;
   }[];
 
-  customerId: string;
-  deliveryAddress: string | null;
-  contactPhone: string;
-  idempotencyKey: string;
+  grandTotal: number;
 
-  deliveryFee: number;  
+  idempotencyKey?: string;
 
   notes?: string;
 }
+
+
+
+
+
+
+
+
+
+// export interface CreateOrderPayload {
+//   cartId: string;
+
+//   items: {
+//     productId: string;
+//     businessId: string;
+//     quantity: number;
+//   }[];
+
+//   customerId: string;
+//   deliveryAddress: string | null;
+//   contactPhone: string;
+//   idempotencyKey: string;
+
+//   deliveryFee: number;  
+
+//   notes?: string;
+// }
 
 /* =========================
    PAYMENT INTENT

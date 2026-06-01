@@ -395,62 +395,45 @@ export const getVendorProductPerformance =
   };
 
 
-  // ================= SHIPPING RATE =================
+
+
+export type ShippingRateResponse = {
+  success: boolean;
+  message: string;
+  data: number;
+};
+
+
+
+// ================= SHIPPING RATE TYPES =================
+
+export interface CreateWeightRange {
+  min: number;
+  max: number | null;
+  price: number;
+}
 
 export interface CreateBusinessShippingRatePayload {
   businessId: string;
   originState: string;
-
-  priceBreakdown: {
-    destinationState: string;
-
-    weightRanges: {
-      min: number;
-      max: number;
-      price: number;
-    }[];
-  }[];
-}
-
-
-
-
-/* ================= TYPES ================= */
-
-export interface CreateWeightRange {
-  min: number;
-  max: number;
-  price: number;
-}
-
-export interface CreatePriceBreakdown {
   destinationState: string;
   weightRanges: CreateWeightRange[];
 }
 
-export interface CreateBusinessShippingRatePayload {
+/* ================= RESPONSE ================= */
+
+export interface BusinessShippingRate {
+  _id: string;
   businessId: string;
   originState: string;
-  priceBreakdown: CreatePriceBreakdown[];
+  destinationState: string;
+  weightRanges: CreateWeightRange[];
+  createdAt: string;
+  updatedAt: string;
 }
-
-/* ================= RESPONSE ================= */
 
 export interface BusinessShippingRateResponse {
   success: boolean;
   message: string;
-  data: any; // you can replace with BusinessShippingRate type if you want strict typing
+  data: BusinessShippingRate;
 }
-
-/* ================= SERVICE ================= */
-
-export const createBusinessShippingRate = async (
-  payload: CreateBusinessShippingRatePayload
-): Promise<BusinessShippingRateResponse["data"]> => {
-  const res = await apiClient.post(
-    "/business-shipping-rate/create-business-shipping-rate",
-    payload
-  );
-
-  return res.data.data;
-};

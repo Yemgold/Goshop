@@ -1,246 +1,31 @@
-
-
-
-// import { useAuthStore } from "../../../store/auth.store";
-
-// import { PageHeader } from "../../../components/ui/PageHeader";
-// import { SectionCard } from "../../../components/ui/SectionCard";
-// import { StatCard } from "../../../components/ui/StatCard";
-
-// import { useBusinessShippingRates } from "../../../hooks/vendor/useBusinessShippingRates";
-
-// export default function DeliveryRate() {
-//   const businessId = useAuthStore(
-//     (state) => state.user?.businessId
-//   );
-
-//   const {
-//     data,
-//     isLoading,
-//     isError,
-//   } = useBusinessShippingRates(
-//     businessId || ""
-//   );
-
-//   /* ================= LOADING ================= */
-
-//   if (isLoading) {
-//     return (
-//       <div className="p-6 space-y-6">
-//         <div className="h-8 w-56 bg-gray-200 rounded animate-pulse" />
-
-//         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-//           {[1, 2, 3].map((item) => (
-//             <div
-//               key={item}
-//               className="h-24 bg-gray-200 rounded animate-pulse"
-//             />
-//           ))}
-//         </div>
-
-//         <div className="h-96 bg-gray-200 rounded animate-pulse" />
-//       </div>
-//     );
-//   }
-
-//   /* ================= ERROR ================= */
-
-//   if (isError || !data) {
-//     return (
-//       <div className="p-6 text-center text-red-500">
-//         Failed to load delivery rates.
-//       </div>
-//     );
-//   }
-
-//   /* ================= SUMMARY ================= */
-
-//   const totalStates =
-//     data.priceBreakdown.length;
-
-//   const totalWeightRanges =
-//     data.priceBreakdown.reduce(
-//       (acc, state) =>
-//         acc + state.weightRanges.length,
-//       0
-//     );
-
-//   const totalRoutes =
-//     totalWeightRanges;
-
-//   return (
-//     <div className="p-6 max-w-7xl mx-auto space-y-6">
-//       {/* ================= HEADER ================= */}
-
-//       <PageHeader
-//         title="Delivery Rates"
-//         subtitle="Manage business delivery pricing by state and weight"
-//       />
-
-//       {/* ================= STATS ================= */}
-
-//       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-//         <StatCard
-//           title="Origin State"
-//           value={data.originState}
-//         />
-
-//         <StatCard
-//           title="Destination States"
-//           value={totalStates}
-//         />
-
-//         <StatCard
-//           title="Weight Routes"
-//           value={totalRoutes}
-//         />
-//       </div>
-
-//       {/* ================= TABLE ================= */}
-
-//       <SectionCard title="Shipping Rate Configuration">
-//         <div className="overflow-x-auto">
-//           <table className="w-full">
-//             <thead>
-//               <tr className="border-b text-left text-sm text-gray-500">
-//                 <th className="py-3">
-//                   Origin State
-//                 </th>
-
-//                 <th className="py-3">
-//                   Destination State
-//                 </th>
-
-//                 <th className="py-3">
-//                   Min Weight
-//                 </th>
-
-//                 <th className="py-3">
-//                   Max Weight
-//                 </th>
-
-//                 <th className="py-3">
-//                   Weight Range
-//                 </th>
-
-//                 <th className="py-3">
-//                   Delivery Fee
-//                 </th>
-//               </tr>
-//             </thead>
-
-//             <tbody>
-//               {data.priceBreakdown.flatMap(
-//                 (state) =>
-//                   state.weightRanges.map(
-//                     (range) => (
-//                       <tr
-//                         key={range._id}
-//                         className="border-b hover:bg-gray-50"
-//                       >
-//                         <td className="py-4">
-//                           {data.originState}
-//                         </td>
-
-//                         <td className="py-4">
-//                           {
-//                             state.destinationState
-//                           }
-//                         </td>
-
-//                         <td className="py-4">
-//                           {range.min}kg
-//                         </td>
-
-//                         <td className="py-4">
-//                           {range.max}kg
-//                         </td>
-
-//                         <td className="py-4 font-medium">
-//                           {range.min}kg -
-//                           {range.max}kg
-//                         </td>
-
-//                         <td className="py-4 font-semibold text-green-600">
-//                           ₦
-//                           {range.price.toLocaleString()}
-//                         </td>
-//                       </tr>
-//                     )
-//                   )
-//               )}
-//             </tbody>
-//           </table>
-//         </div>
-//       </SectionCard>
-
-//       {/* ================= SUMMARY CARD ================= */}
-
-//       <SectionCard title="Delivery Logic">
-//         <div className="space-y-3 text-sm text-gray-600">
-//           <p>
-//             Delivery fees are determined
-//             by:
-//           </p>
-
-//           <ul className="list-disc ml-5 space-y-1">
-//             <li>
-//               Vendor Origin State
-//             </li>
-
-//             <li>
-//               Customer Destination
-//               State
-//             </li>
-
-//             <li>
-//               Product Weight Range
-//             </li>
-
-//             <li>
-//               Matching Delivery Fee
-//             </li>
-//           </ul>
-//         </div>
-//       </SectionCard>
-//     </div>
-//   );
-// }
-
-
-
-
-
 import { useState } from "react";
-
-import { useAuthStore } from "../../../store/auth.store";
+import { useAuthStore } from "../../../store/auth.store"; 
 
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { SectionCard } from "../../../components/ui/SectionCard";
 import { StatCard } from "../../../components/ui/StatCard";
 import { Button } from "../../../components/ui/Button";
 
-import { useBusinessShippingRates } from "../../../hooks/vendor/useBusinessShippingRates";
 import CreateRateModal from "../../../components/product/CreateRateModal";
+import { createBusinessShippingRate } from "../../../services/vendor/vendor.api.service";
 
-import { createBusinessShippingRate } from "../../../services/vendor/vendor.api.service"; 
+import { useBusinessShippingRates } from "../../../hooks/vendor/useBusinessShippingRates";
+
+import type { BusinessShippingRate } from "../../../types/vendor/delivery.types";
 
 export default function DeliveryRate() {
-  const businessId = useAuthStore(
-    (state) => state.user?.businessId
-  );
+  const businessId = useAuthStore((state) => state.user?.businessId);
 
-  const [openModal, setOpenModal] =
-    useState(false);
+  const [openRow, setOpenRow] = useState<string | null>(null);
+  const [openModal, setOpenModal] = useState(false);
 
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-  } = useBusinessShippingRates(
-    businessId || ""
-  );
+const {
+  data = [],
+  isLoading,
+  isError,
+  refetch,
+} = useBusinessShippingRates(businessId || "");   
+
 
   /* ================= LOADING ================= */
 
@@ -248,43 +33,36 @@ export default function DeliveryRate() {
     return (
       <div className="p-6 space-y-6">
         <div className="h-8 w-56 bg-gray-200 rounded animate-pulse" />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[1, 2, 3].map((item) => (
-            <div
-              key={item}
-              className="h-24 bg-gray-200 rounded animate-pulse"
-            />
-          ))}
-        </div>
-
         <div className="h-96 bg-gray-200 rounded animate-pulse" />
+      </div>
+    );
+  }
+
+  /* ================= ERROR ================= */
+
+  if (isError) {
+    return (
+      <div className="p-6 text-center text-red-500">
+        Failed to load delivery rates
       </div>
     );
   }
 
   /* ================= EMPTY ================= */
 
-  if (!data) {
+  if (!data || data.length === 0) {
     return (
       <>
         <div className="p-6 max-w-7xl mx-auto">
-
           <div className="flex justify-between items-center mb-6">
-
             <PageHeader
               title="Delivery Rates"
               subtitle="Configure delivery fees by state and weight"
             />
 
-            <Button
-              onClick={() =>
-                setOpenModal(true)
-              }
-            >
+            <Button onClick={() => setOpenModal(true)}>
               Add Rate
             </Button>
-
           </div>
 
           <SectionCard title="No Delivery Rate Found">
@@ -296,15 +74,10 @@ export default function DeliveryRate() {
 
         <CreateRateModal
           open={openModal}
-          onClose={() =>
-            setOpenModal(false)
-          }
+          onClose={() => setOpenModal(false)}
           businessId={businessId || ""}
           onCreate={async (payload) => {
-            await createBusinessShippingRate(
-              payload
-            );
-
+            await createBusinessShippingRate(payload);
             await refetch();
           }}
         />
@@ -312,246 +85,261 @@ export default function DeliveryRate() {
     );
   }
 
-  /* ================= ERROR ================= */
+  /* ================= SAFE DATA ================= */
 
-  if (isError) {
-    return (
-      <div className="p-6 text-center text-red-500">
-        Failed to load delivery rates.
-      </div>
-    );
-  }
+/* ================= SAFE DATA ================= */
 
-  /* ================= SUMMARY ================= */
+const totalRoutes = data.length;
 
-  const totalStates =
-    data.priceBreakdown.length;
+const totalWeightRanges = data.reduce(
+  (acc, rate) => acc + rate.weightRanges.length,
+  0
+);
 
-  const totalWeightRanges =
-    data.priceBreakdown.reduce(
-      (acc, state) =>
-        acc + state.weightRanges.length,
-      0
-    );
+const originState =
+  data.length > 0
+    ? data[0].originState
+    : "-";
 
-  const totalRoutes =
-    totalWeightRanges;
+  /* ================= UI ================= */
 
   return (
     <>
       <div className="p-6 max-w-7xl mx-auto space-y-6">
 
         {/* HEADER */}
-
         <div className="flex justify-between items-center">
-
           <PageHeader
-            title="Delivery Rates"
-            subtitle="Manage business delivery pricing by state and weight"
+            title="Delivery Rate"
+            subtitle="Vendor shipping configuration"
           />
 
-          <Button
-            onClick={() =>
-              setOpenModal(true)
-            }
-          >
+          <Button onClick={() => setOpenModal(true)}>
             Add Rate
           </Button>
-
         </div>
 
         {/* STATS */}
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-          <StatCard
-            title="Origin State"
-            value={data.originState}
-          />
-
-          <StatCard
-            title="Destination States"
-            value={totalStates}
-          />
-
-          <StatCard
-            title="Weight Routes"
-            value={totalRoutes}
-          />
-
+          <StatCard title="Total Routes" value={totalRoutes} />
+          <StatCard title="Weight Ranges" value={data.length? totalWeightRanges / data.length: 0}/>
+          <StatCard title="Origin State" value={originState} />
         </div>
 
         {/* TABLE */}
 
-        <SectionCard title="Shipping Rate Configuration">
 
-          <div className="overflow-x-auto">
+      <SectionCard title="Shipping Rate Configuration">
 
-            <table className="w-full">
+  {/* MOBILE VIEW */}
+  <div className="block md:hidden space-y-4">
+    {data.map((rate: BusinessShippingRate) => {
+      const isOpen = openRow === rate._id;
+
+      return (
+        <div
+          key={rate._id}
+          className="border rounded-lg bg-white shadow-sm"
+        >
+          <div className="p-4 space-y-2">
+            <div>
+              <p className="text-xs text-gray-500">Origin</p>
+              <p className="font-medium">{rate.originState}</p>
+            </div>
+
+            <div>
+              <p className="text-xs text-gray-500">Destination</p>
+              <p className="font-semibold text-blue-600">
+                {rate.destinationState}
+              </p>
+            </div>
+
+            <Button
+              className="w-full"
+              onClick={() =>
+                setOpenRow(isOpen ? null : rate._id)
+              }
+            >
+              {isOpen ? "Hide Weight Ranges" : "View Weight Ranges"}
+            </Button>
+          </div>
+
+          {isOpen && (
+            <div className="border-t bg-gray-50 p-3 space-y-3">
+              {rate.weightRanges.map((range, i) => (
+                <div
+                  key={i}
+                  className="border rounded p-3 bg-white"
+                >
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <p className="text-gray-500">Range</p>
+                      <p>
+                        {range.min}kg - {range.max ?? "∞"}kg
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-500">Fee</p>
+                      <p className="font-bold text-green-600">
+                        ₦{range.price.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 mt-3">
+                    <Button className="flex-1 !h-8 text-xs">
+                      Edit
+                    </Button>
+
+                    <Button className="flex-1 !h-8 text-xs !bg-red-600">
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    })}
+  </div>
+
+  {/* DESKTOP TABLE */}
+  <div className="hidden md:block overflow-x-auto">
+    <table className="w-full">
+     
 
               <thead>
-
                 <tr className="border-b text-left text-sm text-gray-500">
-
-                  <th className="py-3">
-                    Origin
-                  </th>
-
-                  <th className="py-3">
-                    Destination
-                  </th>
-
-                  <th className="py-3">
-                    Min Weight
-                  </th>
-
-                  <th className="py-3">
-                    Max Weight
-                  </th>
-
-                  <th className="py-3">
-                    Weight Range
-                  </th>
-
-                  <th className="py-3">
-                    Delivery Fee
-                  </th>
-
-                  <th className="py-3">
-                    Actions
-                  </th>
-
+                  <th className="py-3">Origin</th>
+                  <th className="py-3">Destination</th>
+                  <th className="py-3">Min Weight</th>
+                  <th className="py-3">Max Weight</th>
+                  <th className="py-3">Range</th>
+                  <th className="py-3">Fee</th>
+                  <th className="py-3">Actions</th>
                 </tr>
-
               </thead>
 
               <tbody>
+                {data.map((rate: BusinessShippingRate) => {
+                  const isOpen = openRow === rate._id;
 
-                {data.priceBreakdown.flatMap(
-                  (state) =>
-                    state.weightRanges.map(
-                      (range) => (
-                        <tr
-                          key={range._id}
-                          className="border-b hover:bg-gray-50"
-                        >
-                          <td className="py-4">
-                            {data.originState}
-                          </td>
+                  return (
+                    <>
+                      {/* MAIN ROW */}
+                      <tr
+                        key={rate._id}
+                        className="border-b hover:bg-gray-50 cursor-pointer"
+                        onClick={() =>
+                          setOpenRow(isOpen ? null : rate._id)
+                        }
+                      >
+                        <td className="py-4 font-medium">
+                          {rate.originState}
+                        </td>
 
-                          <td className="py-4">
-                            {
-                              state.destinationState
-                            }
-                          </td>
+                        <td className="py-4 font-semibold text-blue-600">
+                          {rate.destinationState}
+                        </td>
 
-                          <td className="py-4">
-                            {range.min}kg
-                          </td>
+                        <td colSpan={4} className="py-4 text-sm text-gray-400">
+                          Click to view weight ranges
+                        </td>
 
-                          <td className="py-4">
-                            {range.max}kg
-                          </td>
+                        <td className="py-4">
+                          <Button className="!h-8 !px-3 text-xs">
+                            {isOpen ? "Hide" : "View"}
+                          </Button>
+                        </td>
+                      </tr>
 
-                          <td className="py-4 font-medium">
-                            {range.min}kg -
-                            {range.max}kg
-                          </td>
+                      {/* EXPANDED ROW */}
+                      {isOpen && (
+                        <tr>
+                          <td colSpan={7} className="bg-gray-50 p-4">
+                            <div className="space-y-3">
+                              {rate.weightRanges.map((range, i) => (
+                                <div
+                                  key={i}
+                                  className="grid grid-cols-4 gap-4 items-center bg-white p-3 rounded border"
+                                >
+                                  <div>
+                                    <p className="text-xs text-gray-500">Range</p>
+                                    <p>
+                                      {range.min}kg -{" "}
+                                      {range.max ?? "∞"}kg
+                                    </p>
+                                  </div>
 
-                          <td className="py-4 font-semibold text-green-600">
-                            ₦
-                            {range.price.toLocaleString()}
-                          </td>
+                                  <div>
+                                    <p className="text-xs text-gray-500">Min</p>
+                                    <p>{range.min}kg</p>
+                                  </div>
 
-                          <td className="py-4">
+                                  <div>
+                                    <p className="text-xs text-gray-500">Max</p>
+                                    <p>{range.max ?? "∞"}kg</p>
+                                  </div>
 
-                            <div className="flex gap-2">
+                                  <div className="flex justify-between items-center">
+                                    <div>
+                                      <p className="text-xs text-gray-500">Fee</p>
+                                      <p className="font-bold text-green-600">
+                                        ₦{range.price.toLocaleString()}
+                                      </p>
+                                    </div>
 
-                              <Button
-                                className="!h-8 !px-3 text-xs"
-                              >
-                                Edit
-                              </Button>
+                                    <div className="flex gap-2">
+                                      <Button className="!h-7 !px-2 text-xs">
+                                        Edit
+                                      </Button>
 
-                              <Button
-                                className="!h-8 !px-3 text-xs !bg-red-600"
-                              >
-                                Delete
-                              </Button>
-
+                                      <Button className="!h-7 !px-2 text-xs !bg-red-600">
+                                        Delete
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-
                           </td>
-
                         </tr>
-                      )
-                    )
-                )}
-
+                      )}
+                    </>
+                  );
+                })}
               </tbody>
 
-            </table>
+        
+    </table>
+  </div>
 
-          </div>
+</SectionCard>
 
-        </SectionCard>
-
-        {/* DELIVERY LOGIC */}
-
-        <SectionCard title="Checkout Delivery Logic">
-
-          <div className="space-y-3 text-sm text-gray-600">
-
-            <p>
-              Delivery fees shown at checkout are automatically calculated using:
-            </p>
-
-            <ul className="list-disc ml-5 space-y-1">
-
-              <li>
-                Vendor Origin State
-              </li>
-
-              <li>
-                Customer Destination State
-              </li>
-
-              <li>
-                Product Weight
-              </li>
-
-              <li>
-                Matching Weight Range
-              </li>
-
-              <li>
-                Configured Delivery Fee
-              </li>
-
-            </ul>
-
-          </div>
-
-        </SectionCard>
 
       </div>
 
-      {/* CREATE MODAL */}
-
+      {/* MODAL */}
       <CreateRateModal
         open={openModal}
-        onClose={() =>
-          setOpenModal(false)
-        }
+        onClose={() => setOpenModal(false)}
         businessId={businessId || ""}
         onCreate={async (payload) => {
-          await createBusinessShippingRate(
-            payload
-          );
-
+          await createBusinessShippingRate(payload);
           await refetch();
         }}
       />
     </>
   );
 }
+
+
+
+
+
+
+
+
+
