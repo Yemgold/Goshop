@@ -13,6 +13,7 @@ import {
   getCartAPI,
   getOrCreateCartAPI,
   getBusStopsByStateAPI,
+  verifyPaymentAPI,
   getAllPickupCentersAPI,
 } from "../api/user/buyer.api";
 
@@ -44,5 +45,10 @@ export const buyerService = {
 
   /* BusStop */
   getBusStopsByState:getBusStopsByStateAPI,
+
+  /* Payment */
+
+ getverifyPayment:verifyPaymentAPI,
+  
 
 };

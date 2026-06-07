@@ -100,23 +100,29 @@ export function useLogin() {
       // 5. STORE AUTH (SINGLE SOURCE OF TRUTH)
       // ======================
          
-      login(
-  {
-    ...user,
+ const authUser = {
+  ...user,
 
-    roles,
-    activeRole,
+  id: user.id || user._id,
 
-    businessId,
+  roles,
+  activeRole,
 
-    businessName:
-      profile?.business?.businessName,
+  businessId,
 
-    businessAddress:
-      profile?.business?.businessAddress,
-  },
-  accessToken
+  businessName:
+    profile?.business?.businessName,
+
+  businessAddress:
+    profile?.business?.businessAddress,
+};
+
+console.log(
+  "🔥 AUTH USER SAVED:",
+  JSON.stringify(authUser, null, 2)
 );
+
+login(authUser, accessToken);
 
       // ======================
       // 6. NAVIGATION

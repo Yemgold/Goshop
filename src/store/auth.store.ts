@@ -86,6 +86,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       roleRequests: user.roleRequests || [],
     };
 
+    console.log(
+  "🔥 LOGIN USER RECEIVED:",
+  JSON.stringify(user, null, 2)
+);
+
     localStorage.setItem("accessToken", token);
     localStorage.setItem("auth_user", JSON.stringify(safeUser));
 

@@ -136,3 +136,10 @@ export const getBusStopsByStateAPI = async (state: string) => {
 
 
 
+
+export const verifyPaymentAPI = (reference: string) => {
+  return apiClient.get(`/payments/verify/${reference}`);
+};
+
+
+
