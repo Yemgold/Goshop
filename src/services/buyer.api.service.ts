@@ -12,6 +12,8 @@ import {
   clearCartAPI,
   getCartAPI,
   getOrCreateCartAPI,
+  getBusStopsByStateAPI,
+  getAllPickupCentersAPI,
 } from "../api/user/buyer.api";
 
 /* ================= SERVICE ================= */
@@ -36,4 +38,11 @@ export const buyerService = {
   updateCartItem: updateCartItemAPI,
   removeCartItem: removeCartItemAPI,
   clearCart: clearCartAPI,
+
+  /* Pickup */
+  getPickupCenters:getAllPickupCentersAPI,
+
+  /* BusStop */
+  getBusStopsByState:getBusStopsByStateAPI,
+
 };

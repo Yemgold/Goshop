@@ -13,6 +13,17 @@ type DeliveryRule = {
   _id?: string;
 };
 
+export type ShippingRate = {
+  destinationState: string;
+  originState: string;
+
+  weightRanges: {
+    min: number;
+    max: number | null;
+    price: number;
+  }[];
+};
+
 /* ================= PRODUCTS ================= */
 
 export type MediaType = "image" | "video";
@@ -37,7 +48,7 @@ export type Product = {
 
   image?: string;
 
-  productWeight?: string;
+  weight?: number;
 
   deliveryRules?: DeliveryRule[];
 
@@ -68,8 +79,9 @@ export type Product = {
 
   stock?: number;
 
-
   media?: ProductMedia[];
+
+  shippingRates?: ShippingRate[];  
 };
 
 /* ================= ORDERS ================= */
@@ -260,6 +272,8 @@ export type CartPayload = {
   price?: number;
 
   image?: string;
+
+  weight?: string;
 };
 
 export interface Cart {
@@ -290,16 +304,16 @@ export type CartItemUI = {
  */
 export type CartItemB = {
   productId: string;
-
   businessId: string;
-
   quantity: number;
+
 
   name?: string;
   price?: number;
   image?: string;
 
-
+  weight?: string;
+  
 
 };
 

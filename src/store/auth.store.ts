@@ -7,12 +7,18 @@ import type { UserRole } from "../types/roles";
 import type { AdminRole } from "../types/admin.type";
 import { authService } from "../services/auth.service";
 
+
+
+
+
 /* ================= TYPES ================= */
 
 export interface RoleRequest {
   role: UserRole;
   status: "pending" | "approved" | "rejected";
 }
+
+
 
 export interface AuthUser {
   id: string;
@@ -55,6 +61,8 @@ type AuthState = {
   user: AuthUser | null;
   accessToken: string | null;
 
+  isHydrating: boolean;
+
   login: (user: AuthUser, token: string) => void;
   logout: () => void;
 
@@ -67,6 +75,8 @@ type AuthState = {
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   accessToken: null,
+  isHydrating: false,
+  
 
   /* ================= LOGIN ================= */
   login: (user, token) => {
@@ -118,18 +128,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   rehydrateAuth: async () => {
 
 
-
-
-
-
-
-    
-
   const token = localStorage.getItem("accessToken");
   if (!token) return;
 
-  // set token immediately for interceptor
+  
   set({ accessToken: token });
+
+   set({ isHydrating: true });
 
   try {
     const res = await authService.getMe();

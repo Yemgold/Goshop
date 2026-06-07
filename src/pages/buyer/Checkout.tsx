@@ -1,1154 +1,578 @@
 
-import { useQuery } from "@tanstack/react-query";
-import { buyerService } from "../../services/buyer.api.service";
-import { useCartStore } from "../../store/cart.store";
-import { useAuthStore } from "../../store/auth.store";
-import { useCheckout } from "../../hooks/buyer/useCheckout";
 
-import { useCheckoutForm } from "../../hooks/buyer/useCheckoutForm";
-import { useMultiCartSummary } from "../../hooks/vendor/useMultiCartSummary";
-import { useMultiVendorShipping } from "../../hooks/vendor/useMultiVendorShipping";
+
+
+
+
+
+
+
+
+
+
+
+
+import { useMemo, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+import { buyerService } from "../../services/buyer.api.service";
+
+import { useCheckout } from "../../hooks/checkOut/useCheckout";
+import { useCheckoutForm } from "../../hooks/checkOut/useCheckoutForm";
+
+import { useMultiCartSummary } from "../../hooks/cart/useMultiCartSummary";
+import { calculateShipping } from "../../services/shipping.engine";
+
+import { getAllPickupCentersAPI } from "../../api/user/buyer.api";
+import { getBusStopsByStateAPI } from "../../api/user/buyer.api";
+
+
+
+import { states } from "../../data/states";
+import { townsByState } from "../../data/towns";
+
+import { toast } from "react-hot-toast";
+
+
 
 export default function Checkout() {
-  const user = useAuthStore((s) => s.user);
-  const items = useCartStore((s) => s.items);
-  const removeFromCart = useCartStore((s) => s.removeFromCart);
+ 
 
-  /* PRODUCTS */
-  const { data: productsRaw = [] } = useQuery({
+const form = useCheckoutForm();
+const selectedState = form.selectedState;
+
+ const nextStep = () => form.next();
+ const prevStep = () => form.back();
+
+
+
+
+
+  /* ================= CART FROM API (REPLACED ZUSTAND) ================= */
+  const { data: cartData } = useQuery({
+    queryKey: ["cart"],
+    queryFn: buyerService.getCart, // or getOrCreateCartAPI wrapper
+  });
+
+  const items = useMemo(() => {
+    return Array.isArray(cartData?.items) ? cartData.items : [];
+  }, [cartData]);
+
+  /* ================= PRODUCTS ================= */
+  const { data: productsRaw } = useQuery({
     queryKey: ["products"],
     queryFn: buyerService.getProducts,
   });
+ 
 
-  const products = Array.isArray(productsRaw)
-    ? productsRaw
-    : (productsRaw as any)?.data ?? [];
+  const products = useMemo(() => {
+    if (!productsRaw) return [];
 
-  /* FORM */
-  const form = useCheckoutForm();
+    if (Array.isArray(productsRaw)) return productsRaw;
 
-  /* MULTI VENDOR CART */
-  const cart = useMultiCartSummary(items, products);
+    if (Array.isArray((productsRaw as any)?.data)) {
+      return (productsRaw as any).data;
+    }
 
-  // const shippingDoc = await getVendorShipping(
-  // vendor.businessId,
-  // customerState
+    if (Array.isArray((productsRaw as any)?.products)) {
+      return (productsRaw as any).products;
+    }
 
-// );
+    return [];
+  }, [productsRaw]);
 
-// function calculateShipping(weight: number, ranges: any[]) {
-//   const match = ranges.find(
-//     (r) => weight >= r.min && (r.max === null || weight <= r.max)
-//   );
+ /* ================= BUS STOPS ================= */
 
-//   return match?.price || 0;
-// }
+const { data } = useQuery({
+  queryKey: ["busStops", form.selectedState],
+  queryFn: () => getBusStopsByStateAPI(form.selectedState),
+  enabled:
+    !!form.selectedState &&
+    form.deliveryMode === "homeDelivery",
+});
 
 
-// const shippingFee = vendor.items.reduce((sum, item) => {
-//   return sum + calculateShipping(item.weight, shippingDoc.weightRanges);
-// }, 0);
+const busStops = data?.data || [];
 
-  /* SHIPPING PER VENDOR */
-  const vendorsWithShipping = useMultiVendorShipping(
-    cart.vendors,
-    form.selectedState
+const deliveryRates = busStops;
+
+  /* ================= PICKUP CENTERS ================= */
+
+const { data: pickupResponse } = useQuery({
+  queryKey: ["pickup-centers"],
+  queryFn: getAllPickupCentersAPI,
+});
+
+const allPickupCenters = Array.isArray(pickupResponse?.data)
+  ? pickupResponse.data
+  : [];
+
+
+
+const pickupCenters = useMemo(() => {
+  if (!form.selectedState) return [];
+
+  const filtered = allPickupCenters.filter(
+    (center: any) =>
+      center.state?.toLowerCase() === form.selectedState.toLowerCase()
   );
 
-  /* GRAND TOTAL */
-  const grandTotal = vendorsWithShipping.reduce(
-    (sum: number, v: any) =>
-      sum + v.subtotal + (v.shippingFee || 0),
-    0
+  return filtered.length > 0 ? filtered : [];
+}, [allPickupCenters, form.selectedState]);
+
+
+
+
+  /* ================= DEBUG ================= */
+
+  useEffect(() => {
+  console.log("PRODUCTS FINAL:", products);
+  console.log("CHECKOUT ITEMS:", items);
+ 
+  console.log("STATE SELECTED:", form.selectedState);
+  console.log("CENTERS:", allPickupCenters);
+}, [products, items,selectedState, allPickupCenters, pickupCenters, states]);
+
+onError: (error: any) => {
+  console.log(
+    "CHECKOUT ERROR:",
+    JSON.stringify(error.response?.data, null, 2)
   );
 
-  const subtotal = cart.total;
-
-  /* CHECKOUT HOOK */
-  const { placeOrder, isPending } = useCheckout();
-
-  /* PLACE ORDER */
-  const handlePlaceOrder = async () => {
-    if (!items.length) return;
-
-    const payload = {
-      buyerId: user?.id!,
-      deliveryMode: form.deliveryMode,
-      address: form.address,
-      city: form.selectedTown,
-      contactPhone: form.phone,
-
-      vendors: vendorsWithShipping.map((v: any) => ({
-        businessId: v.businessId,
-        items: v.items,
-        subtotal: v.subtotal,
-        shippingFee: v.shippingFee || 0,
-        total: v.subtotal + (v.shippingFee || 0),
-      })),
-
-      grandTotal,
-    };
-
-    await placeOrder(payload);
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-
-      {/* HEADER */}
-      <h1 className="text-2xl font-bold">
-        Multi-Vendor Checkout
-      </h1>
-
-      {/* SUMMARY */}
-      <div className="mt-4 space-y-2">
-        <p>Subtotal: ₦{subtotal.toLocaleString()}</p>
-        <p>
-          Shipping: ₦
-          {(grandTotal - subtotal).toLocaleString()}
-        </p>
-        <p className="font-bold">
-          Grand Total: ₦{grandTotal.toLocaleString()}
-        </p>
-      </div>
-
-      {/* ACTIONS */}
-      <div className="mt-6 flex gap-3">
-        <button onClick={form.back}>
-          Back
-        </button>
-
-        <button onClick={form.next}>
-          Next
-        </button>
-
-        <button
-          onClick={handlePlaceOrder}
-          disabled={isPending}
-          className="bg-black text-white px-4 py-2 rounded"
-        >
-          {isPending ? "Processing..." : "Place Order"}
-        </button>
-      </div>
-
-      {/* VENDOR BREAKDOWN */}
-      <div className="mt-8 space-y-6">
-        {vendorsWithShipping.map((vendor: any) => (
-          <div
-            key={vendor.businessId}
-            className="border rounded-lg p-4 bg-white"
-          >
-            <h3 className="font-bold mb-2">
-              Vendor: {vendor.businessId}
-            </h3>
-
-            {vendor.items.map((item: any) => (
-              <div
-                key={item.productId}
-                className="flex justify-between py-1"
-              >
-                <p>{item.productId}</p>
-
-                <button
-                  onClick={() =>
-                    removeFromCart(item.productId)
-                  }
-                  className="text-red-500 text-sm"
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-
-            <div className="mt-3 text-sm space-y-1">
-              <p>
-                Subtotal: ₦
-                {vendor.subtotal.toLocaleString()}
-              </p>
-
-              <p>
-                Shipping: ₦
-                {(vendor.shippingFee || 0).toLocaleString()}
-              </p>
-
-              <p className="font-bold">
-                Total: ₦
-                {(
-                  vendor.subtotal +
-                  (vendor.shippingFee || 0)
-                ).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+  console.log(
+    "VALIDATION ERRORS:",
+    error.response?.data?.message
   );
 }
 
+  /* ================= CART SUMMARY ================= */
+  const isReady = items.length > 0 && products.length > 0;
 
+  const cart = useMultiCartSummary(
+    isReady ? items : [],
+    isReady ? products : []
+  );
 
+/* ================= SHIPPING ================= */
 
+const cartItems = useMemo(() => {
+  return (cart.vendors || []).flatMap((v: any) => v.items || []);
+}, [cart.vendors]);
 
+const shipping = useMemo(() => {
+  if (!form.selectedState || !form.deliveryMode) {
+    return {
+      vendors: [],
+      totalShipping: 0,
+      totalWeight: 0,
+    };
+  }
 
+  return calculateShipping(
+    cartItems,
+    products,
+    form.selectedState,
+    deliveryRates,
+    form.deliveryMode 
+  );
+}, [cartItems, products, form.selectedState, form.deliveryMode]);
 
+const vendorsWithShipping = shipping.vendors;
+const shippingTotal = shipping.totalShipping;
 
 
 
+/* ================= DEBUG LOGS ================= */
 
+useEffect(() => {
+  console.log("FINAL SHIPPING TOTAL:", shippingTotal);
 
+  console.log(busStops);
 
+  console.log(
+    "BREAKDOWN:",
+    vendorsWithShipping.map(v => v.shippingFee)
+  );
+}, [shippingTotal,busStops, vendorsWithShipping]);
 
 
 
 
+/* ================= PRICING ================= */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useState, useMemo, useEffect } from "react";
-// import { useQuery } from "@tanstack/react-query";
-
-// import { buyerService } from "../../services/buyer.api.service";
-// import { useCartStore } from "../../store/cart.store";
-// import { useAuthStore } from "../../store/auth.store";
-// import { useCheckout } from "../../hooks/buyer/useCheckout";
-// import { getBuyerProductByIdAPI } from "../../api/user/buyer.api";
-
-// import { states } from "../../data/states";
-// import { townsByState } from "../../data/towns";
-
-
-
-// type DeliveryMode = "office" | "home" | null;
-// type Step = 1 | 2 | 3 | 4;
-
-// type PickupCenter = {
-//   _id: string;
-//   name: string;
-//   state: string;
-//   town: string;
-//   address: string;
-//   phone: string;
-//   isActive: boolean;
-//   isMainHub: boolean;
-// };
-
-// export default function Checkout() {
-//   const user = useAuthStore((s) => s.user);
-//   const items = useCartStore((s) => s.items);
-
-//   const removeFromCart = useCartStore(
-//     (s) => s.removeFromCart
-//   );
-
-//   const { data: productsRaw = [] } = useQuery({
-//     queryKey: ["products"],
-//     queryFn: buyerService.getProducts,
-//   });
-
-//   const products = Array.isArray(productsRaw)
-//     ? productsRaw
-//     : (productsRaw as any)?.data ?? [];
-
-//   const [step, setStep] = useState<Step>(1);
-
-//   const [deliveryMode, setDeliveryMode] =
-//     useState<DeliveryMode>(null);
-
-//   const [address, setAddress] = useState("");
-//   const [phone, setPhone] = useState("");
-
-//   const [selectedState, setSelectedState] =
-//     useState("");
-
-//   const [selectedTown, setSelectedTown] =
-//     useState("");
-
-//   const [vendorInfo, setVendorInfo] =
-//     useState<{
-//       state: string;
-//       town: string;
-//     } | null>(null);
-
-//   /* PICKUP CENTERS */
-//   const [pickupCenters, setPickupCenters] =
-//     useState<PickupCenter[]>([]);
-
-//   const [
-//     selectedPickupCenter,
-//     setSelectedPickupCenter,
-//   ] = useState<PickupCenter | null>(null);
-
-//   /* FEES */
-//   const [pickupFee, setPickupFee] =
-//     useState(0);
-
-//   /* AUTO FILL PHONE */
-//   useEffect(() => {
-//     if (user?.phone) {
-//       setPhone(user.phone);
-//     }
-//   }, [user]);
-
-//   /* FETCH VENDOR */
-//   useEffect(() => {
-//     const fetchVendor = async () => {
-//       if (!items.length) return;
-
-//       try {
-//         const firstItem = items[0] as any;
-
-//         const product =
-//           await getBuyerProductByIdAPI(
-//             firstItem.productId
-//           );
-
-//         const business = product?.businessId;
-
-//         setVendorInfo({
-//           state:
-//             business?.businessAddress?.state ??
-//             "Unknown State",
-
-//           town:
-//             business?.businessAddress?.town ??
-//             "Unknown Town",
-//         });
-
-//         /* PICKUP DELIVERY FEE */
-//         if (
-//           selectedState &&
-//           Array.isArray(product?.deliveryRules)
-//         ) {
-//           const matchedRule =
-//             product.deliveryRules.find(
-//               (rule: any) =>
-//                 rule.state
-//                   ?.toLowerCase()
-//                   .trim() ===
-//                 selectedState
-//                   ?.toLowerCase()
-//                   .trim()
-//             );
-
-//           setPickupFee(
-//             matchedRule?.price || 0
-//           );
-//         }
-//       } catch {
-//         setVendorInfo({
-//           state: "Unknown State",
-//           town: "Unknown Town",
-//         });
-
-//         setPickupFee(0);
-//       }
-//     };
-
-//     fetchVendor();
-//   }, [items, selectedState]);
-
-//   /* FETCH PICKUP CENTERS */
-//   useEffect(() => {
-//     const fetchPickupCenters =
-//       async () => {
-//         if (!selectedState) {
-//           setPickupCenters([]);
-//           return;
-//         }
-
-//         try {
-//           const response = await fetch(
-//             `/pickup-center/get-state-pickup-centers/${selectedState.toLowerCase()}`
-//           );
-
-//           const data = await response.json();
-
-//           if (data?.success) {
-//             setPickupCenters(data.data || []);
-//           }
-//         } catch (error) {
-//           console.log(error);
-//           setPickupCenters([]);
-//         }
-//       };
-
-//     fetchPickupCenters();
-//   }, [selectedState]);
-
-//   /* CHECKOUT */
-//   const { placeOrder, isPending } =
-//     useCheckout({
-//       address,
-//       city: selectedTown,
-//       contactPhone: phone,
-//       deliveryMode,
-//     });
-
-//   /* ENRICH ITEMS */
-//   const enrichedItems = useMemo(() => {
-//     if (
-//       !Array.isArray(items) ||
-//       !Array.isArray(products)
-//     )
-//       return [];
-
-//     return items.map((cartItem) => {
-//       const product = products.find(
-//         (p: any) =>
-//           (p._id || p.id) ===
-//           cartItem.productId
-//       );
-
-//       return {
-//         productId: cartItem.productId,
-//         quantity: cartItem.quantity,
-//         name: product?.name ?? "Product",
-//         price: product?.price ?? 0,
-//         image:
-//           product?.media?.[0]?.url ??
-//           "/placeholder.png",
-//       };
-//     });
-//   }, [items, products]);
-
-//   /* TOTAL */
-//   const total = useMemo(() => {
-//     return enrichedItems.reduce(
-//       (sum, item) =>
-//         sum +
-//         item.price * item.quantity,
-//       0
-//     );
-//   }, [enrichedItems]);
-
-//   /* HOME DELIVERY FEE */
-//   const homeDeliveryFee = useMemo(() => {
-//     if (deliveryMode !== "home")
-//       return 0;
-
-//     if (!selectedState) return 0;
-
-//     if (!vendorInfo) return 0;
-
-//     /* SAME STATE */
-//     if (
-//       selectedState.toLowerCase() ===
-//       vendorInfo.state.toLowerCase()
-//     ) {
-//       return 2000;
-//     }
-
-//     /* DIFFERENT STATE */
-//     return 4000;
-//   }, [
-//     deliveryMode,
-//     selectedState,
-//     vendorInfo,
-//   ]);
-
-//   /* FINAL DELIVERY FEE */
-//   const deliveryFee = useMemo(() => {
-//     if (deliveryMode === "home") {
-//       return homeDeliveryFee;
-//     }
-
-//     if (deliveryMode === "office") {
-//       return pickupFee;
-//     }
-
-//     return 0;
-//   }, [
-//     deliveryMode,
-//     homeDeliveryFee,
-//     pickupFee,
-//   ]);
-
-//   const grandTotal =
-//     total + deliveryFee;
-
-//   /* VALIDATION */
-//   const canGoNextStep = () => {
-//     if (step === 1)
-//       return !!deliveryMode;
-
-//     if (step === 2) {
-//       /* PICKUP CENTER */
-//       if (deliveryMode === "office") {
-//         return (
-//           selectedState.length > 1 &&
-//           selectedPickupCenter !==
-//             null &&
-//           phone.length >= 8
-//         );
-//       }
-
-//       /* HOME DELIVERY */
-//       if (deliveryMode === "home") {
-//         return (
-//           address.length > 4 &&
-//           selectedState.length > 1 &&
-//           selectedTown.length > 1 &&
-//           phone.length >= 8
-//         );
-//       }
-//     }
-
-//     return true;
-//   };
-
-//   const next = () => {
-//     if (!canGoNextStep()) return;
-
-//     setStep((s) =>
-//       s < 4
-//         ? ((s + 1) as Step)
-//         : s
-//     );
-//   };
-
-//   const back = () => {
-//     setStep((s) =>
-//       s > 1
-//         ? ((s - 1) as Step)
-//         : s
-//     );
-//   };
-
-//   const handlePlaceOrder =
-//     async () => {
-//       if (!items.length) return;
-
-//       await placeOrder();
-//     };
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 py-8 px-4">
-//       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-//         {/* LEFT */}
-//         <div className="lg:col-span-2 space-y-6">
-
-//           {/* HEADER */}
-//           <div>
-//             <h1 className="text-3xl font-bold text-gray-900">
-//               Checkout
-//             </h1>
-
-//             <p className="text-sm text-gray-500 mt-1">
-//               Complete your order
-//               securely
-//             </p>
-//           </div>
-
-//           {/* STEPS */}
-//           <div className="flex items-center gap-3 overflow-x-auto pb-1">
-
-//             {[
-//               "Delivery",
-//               "Address",
-//               "Summary",
-//               "Payment",
-//             ].map((label, index) => {
-//               const current =
-//                 index + 1;
-
-//               return (
-//                 <div
-//                   key={label}
-//                   className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm whitespace-nowrap transition-all ${
-//                     step === current
-//                       ? "bg-black text-white border-black"
-//                       : "bg-white text-gray-500"
-//                   }`}
-//                 >
-//                   <div
-//                     className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-//                       step === current
-//                         ? "bg-white text-black"
-//                         : "bg-gray-100 text-gray-500"
-//                     }`}
-//                   >
-//                     {current}
-//                   </div>
-
-//                   <span>{label}</span>
-//                 </div>
-//               );
-//             })}
-//           </div>
-
-//           {/* CARD */}
-//           <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 md:p-8">
-
-//             {/* STEP 1 */}
-//             {step === 1 && (
-//               <div className="space-y-6">
-
-//                 <div>
-//                   <h2 className="text-xl font-semibold text-gray-900">
-//                     Choose Delivery
-//                     Method
-//                   </h2>
-//                 </div>
-
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-//                   {/* PICKUP */}
-//                   <button
-//                     onClick={() =>
-//                       setDeliveryMode(
-//                         "office"
-//                       )
-//                     }
-//                     className={`border rounded-2xl p-5 text-left transition-all ${
-//                       deliveryMode ===
-//                       "office"
-//                         ? "border-black bg-black text-white"
-//                         : "bg-white hover:border-gray-400"
-//                     }`}
-//                   >
-//                     <h3 className="font-semibold text-base">
-//                       Pickup Center
-//                     </h3>
-
-//                     <p className="text-sm opacity-70 mt-2">
-//                       Collect your
-//                       package from a
-//                       pickup center
-//                     </p>
-//                   </button>
-
-//                   {/* HOME */}
-//                   <button
-//                     onClick={() =>
-//                       setDeliveryMode(
-//                         "home"
-//                       )
-//                     }
-//                     className={`border rounded-2xl p-5 text-left transition-all ${
-//                       deliveryMode ===
-//                       "home"
-//                         ? "border-black bg-black text-white"
-//                         : "bg-white hover:border-gray-400"
-//                     }`}
-//                   >
-//                     <h3 className="font-semibold text-base">
-//                       Home Delivery
-//                     </h3>
-
-//                     <p className="text-sm opacity-70 mt-2">
-//                       Delivered to
-//                       your address
-//                     </p>
-//                   </button>
-//                 </div>
-//               </div>
-//             )}
-
-//             {/* STEP 2 */}
-//             {step === 2 && (
-//               <div className="space-y-6">
-
-//                 <div>
-//                   <h2 className="text-xl font-semibold text-gray-900">
-//                     Delivery Details
-//                   </h2>
-//                 </div>
-
-//                 <div className="space-y-5">
-
-//                   {/* STATE */}
-//                   <div>
-//                     <label className="text-sm font-medium text-gray-700 mb-2 block">
-//                       State
-//                     </label>
-
-//                     <select
-//                       value={
-//                         selectedState
-//                       }
-//                       onChange={(e) => {
-//                         setSelectedState(
-//                           e.target.value
-//                         );
-
-//                         setSelectedTown(
-//                           ""
-//                         );
-
-//                         setSelectedPickupCenter(
-//                           null
-//                         );
-//                       }}
-//                       className="border border-gray-200 rounded-xl p-3 w-full"
-//                     >
-//                       <option value="">
-//                         Select State
-//                       </option>
-
-//                       {states.map(
-//                         (state) => (
-//                           <option
-//                             key={
-//                               state.id
-//                             }
-//                             value={
-//                               state.name
-//                             }
-//                           >
-//                             {
-//                               state.name
-//                             }
-//                           </option>
-//                         )
-//                       )}
-//                     </select>
-//                   </div>
-
-//                   {/* PICKUP CENTER */}
-//                   {deliveryMode ===
-//                     "office" && (
-//                     <div>
-//                       <label className="text-sm font-medium text-gray-700 mb-2 block">
-//                         Pickup Center
-//                       </label>
-
-//                       <select
-//                         value={
-//                           selectedPickupCenter?._id ||
-//                           ""
-//                         }
-//                         onChange={(
-//                           e
-//                         ) => {
-//                           const center =
-//                             pickupCenters.find(
-//                               (
-//                                 c
-//                               ) =>
-//                                 c._id ===
-//                                 e
-//                                   .target
-//                                   .value
-//                             );
-
-//                           setSelectedPickupCenter(
-//                             center ||
-//                               null
-//                           );
-//                         }}
-//                         className="border border-gray-200 rounded-xl p-3 w-full"
-//                       >
-//                         <option value="">
-//                           Select Pickup
-//                           Center
-//                         </option>
-
-//                         {pickupCenters.map(
-//                           (
-//                             center
-//                           ) => (
-//                             <option
-//                               key={
-//                                 center._id
-//                               }
-//                               value={
-//                                 center._id
-//                               }
-//                             >
-//                               {
-//                                 center.name
-//                               }{" "}
-//                               -{" "}
-//                               {
-//                                 center.town
-//                               }
-//                             </option>
-//                           )
-//                         )}
-//                       </select>
-
-//                       {selectedPickupCenter && (
-//                         <div className="mt-3 p-4 rounded-xl bg-gray-50 border border-gray-100 text-sm">
-//                           <p>
-//                             <strong>
-//                               Address:
-//                             </strong>{" "}
-//                             {
-//                               selectedPickupCenter.address
-//                             }
-//                           </p>
-
-//                           <p className="mt-1">
-//                             <strong>
-//                               Phone:
-//                             </strong>{" "}
-//                             {
-//                               selectedPickupCenter.phone
-//                             }
-//                           </p>
-//                         </div>
-//                       )}
-//                     </div>
-//                   )}
-
-//                   {/* HOME DELIVERY */}
-//                   {deliveryMode ===
-//                     "home" && (
-//                     <>
-//                       {/* TOWN */}
-//                       <div>
-//                         <label className="text-sm font-medium text-gray-700 mb-2 block">
-//                           Town
-//                         </label>
-
-//                         <select
-//                           value={
-//                             selectedTown
-//                           }
-//                           onChange={(
-//                             e
-//                           ) =>
-//                             setSelectedTown(
-//                               e
-//                                 .target
-//                                 .value
-//                             )
-//                           }
-//                           disabled={
-//                             !selectedState
-//                           }
-//                           className="border border-gray-200 rounded-xl p-3 w-full"
-//                         >
-//                           <option value="">
-//                             Select Town
-//                           </option>
-
-//                           {townsByState[
-//                             selectedState
-//                           ]?.map(
-//                             (
-//                               town
-//                             ) => (
-//                               <option
-//                                 key={
-//                                   town
-//                                 }
-//                                 value={
-//                                   town
-//                                 }
-//                               >
-//                                 {
-//                                   town
-//                                 }
-//                               </option>
-//                             )
-//                           )}
-//                         </select>
-//                       </div>
-
-//                       {/* ADDRESS */}
-//                       <div>
-//                         <label className="text-sm font-medium text-gray-700 mb-2 block">
-//                           Delivery
-//                           Address
-//                         </label>
-
-//                         <input
-//                           className="border border-gray-200 rounded-xl p-3 w-full"
-//                           value={
-//                             address
-//                           }
-//                           onChange={(
-//                             e
-//                           ) =>
-//                             setAddress(
-//                               e
-//                                 .target
-//                                 .value
-//                             )
-//                           }
-//                           placeholder="Enter full address"
-//                         />
-//                       </div>
-//                     </>
-//                   )}
-
-//                   {/* PHONE */}
-//                   <div>
-//                     <label className="text-sm font-medium text-gray-700 mb-2 block">
-//                       Phone Number
-//                     </label>
-
-//                     <input
-//                       className="border border-gray-200 rounded-xl p-3 w-full"
-//                       value={phone}
-//                       onChange={(e) =>
-//                         setPhone(
-//                           e.target.value
-//                         )
-//                       }
-//                       placeholder="08012345678"
-//                     />
-//                   </div>
-
-//                 </div>
-//               </div>
-//             )}
-
-//             {/* STEP 3 */}
-//             {step === 3 && (
-//               <div className="space-y-4">
-
-//                 <h2 className="text-xl font-semibold">
-//                   Order Summary
-//                 </h2>
-
-//                 {enrichedItems.map(
-//                   (item) => (
-//                     <div
-//                       key={
-//                         item.productId
-//                       }
-//                       className="flex items-center justify-between border rounded-2xl p-4"
-//                     >
-//                       <div className="flex items-center gap-3">
-//                         <img
-//                           src={
-//                             item.image
-//                           }
-//                           className="w-16 h-16 rounded-xl object-cover border"
-//                         />
-
-//                         <div>
-//                           <p className="font-medium">
-//                             {
-//                               item.name
-//                             }
-//                           </p>
-
-//                           <p className="text-sm text-gray-500">
-//                             Qty:{" "}
-//                             {
-//                               item.quantity
-//                             }
-//                           </p>
-//                         </div>
-//                       </div>
-
-//                       <div className="flex flex-col items-end gap-2">
-//                         <p className="font-semibold text-sm">
-//                           ₦
-//                           {(
-//                             item.price *
-//                             item.quantity
-//                           ).toLocaleString()}
-//                         </p>
-
-//                         <button
-//                           onClick={() =>
-//                             removeFromCart(
-//                               item.productId
-//                             )
-//                           }
-//                           className="text-xs text-red-500"
-//                         >
-//                           Remove
-//                         </button>
-//                       </div>
-//                     </div>
-//                   )
-//                 )}
-//               </div>
-//             )}
-
-//             {/* STEP 4 */}
-//             {step === 4 && (
-//               <div className="space-y-6">
-
-//                 <h2 className="text-xl font-semibold">
-//                   Confirm Order
-//                 </h2>
-
-//                 <button
-//                   onClick={
-//                     handlePlaceOrder
-//                   }
-//                   disabled={isPending}
-//                   className="w-full bg-black text-white py-4 rounded-2xl"
-//                 >
-//                   {isPending
-//                     ? "Processing..."
-//                     : "Place Order"}
-//                 </button>
-//               </div>
-//             )}
-
-//             {/* NAVIGATION */}
-//             <div className="flex items-center justify-between pt-6 mt-8 border-t">
-
-//               <button
-//                 onClick={back}
-//                 disabled={step === 1}
-//                 className="px-5 py-2.5 border rounded-xl"
-//               >
-//                 Back
-//               </button>
-
-//               {step < 4 && (
-//                 <button
-//                   onClick={next}
-//                   disabled={
-//                     !canGoNextStep()
-//                   }
-//                   className="px-6 py-2.5 bg-black text-white rounded-xl"
-//                 >
-//                   Continue
-//                 </button>
-//               )}
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* RIGHT */}
-//         <div className="hidden lg:block">
-
-//           <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm sticky top-6">
-
-//             <h2 className="font-semibold text-xl text-gray-900 mb-6">
-//               Order Summary
-//             </h2>
-
-//             <div className="space-y-4">
-
-//               {enrichedItems.map(
-//                 (item) => (
-//                   <div
-//                     key={
-//                       item.productId
-//                     }
-//                     className="flex items-center justify-between gap-3"
-//                   >
-//                     <div className="flex items-center gap-3">
-//                       <img
-//                         src={
-//                           item.image
-//                         }
-//                         className="w-14 h-14 rounded-xl object-cover border"
-//                       />
-
-//                       <div>
-//                         <p className="text-sm font-medium">
-//                           {
-//                             item.name
-//                           }
-//                         </p>
-
-//                         <p className="text-xs text-gray-500 mt-1">
-//                           Qty:{" "}
-//                           {
-//                             item.quantity
-//                           }
-//                         </p>
-//                       </div>
-//                     </div>
-
-//                     <p className="font-semibold text-sm">
-//                       ₦
-//                       {(
-//                         item.price *
-//                         item.quantity
-//                       ).toLocaleString()}
-//                     </p>
-//                   </div>
-//                 )
-//               )}
-//             </div>
-
-//             {/* TOTALS */}
-//             <div className="space-y-3 mt-6 pt-6 border-t border-gray-100">
-
-//               <div className="flex justify-between text-sm">
-//                 <span className="text-gray-500">
-//                   Subtotal
-//                 </span>
-
-//                 <span className="font-medium">
-//                   ₦
-//                   {total.toLocaleString()}
-//                 </span>
-//               </div>
-
-//               <div className="flex justify-between text-sm">
-//                 <span className="text-gray-500">
-//                   Delivery Fee
-//                 </span>
-
-//                 <span className="font-medium">
-//                   ₦
-//                   {deliveryFee.toLocaleString()}
-//                 </span>
-//               </div>
-
-//               <div className="flex justify-between text-lg font-bold pt-4 border-t border-gray-100">
-//                 <span>Total</span>
-
-//                 <span>
-//                   ₦
-//                   {grandTotal.toLocaleString()}
-//                 </span>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//       </div>
-//     </div>
-//   );
-// }
-
-// ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+const subtotal = cart.total || 0;
+const grandTotal = subtotal + shippingTotal;
+
+/* ================= CHECKOUT ================= */
+
+const { placeOrder, isPending } = useCheckout();
+
+const handlePlaceOrder = async () => {
+   console.log("PLACE ORDER CLICKED");
+   console.log("ENTERED placeOrder");
+
+  console.log("cart:", cart);
+  console.log("cartData:", cartData);
+  console.log("form:", form);
+  console.log("vendorsWithShipping:", vendorsWithShipping);
+  console.log("shippingTotal:", shippingTotal);
+
+ if (!cart?.vendors?.length) {
+    toast.error("Cart not ready");
+    return;
+  }
+
+
+  await placeOrder({
+    cart,
+
+    cartData,
+
+    shippingTotal,
+
+    form,
+
+    vendorsWithShipping,
+
+    contactPhone: form.phone,
+  });
+};
+
+
+return (
+  <div className="min-h-screen bg-gray-50">
+    <div className="max-w-6xl mx-auto px-4 py-6 lg:py-10 lg:grid lg:grid-cols-3 lg:gap-8">
+
+      {/* ================= LEFT CONTENT ================= */}
+      <div className="lg:col-span-2 space-y-6">
+
+        {/* HEADER */}
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold">Checkout</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Complete your order securely
+          </p>
+        </div>
+
+        {/* STEP INDICATOR (mobile scroll friendly) */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {["Cart", "Delivery", "Details", "Review"].map((label, index) => (
+            <div
+              key={label}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl border whitespace-nowrap text-sm ${
+                form.step === index + 1
+                  ? "bg-black text-white"
+                  : "bg-white"
+              }`}
+            >
+              <div className="w-5 h-5 rounded-full bg-gray-200 text-black text-xs flex items-center justify-center">
+                {index + 1}
+              </div>
+              {label}
+            </div>
+          ))}
+        </div>
+
+        {/* ================= STEP BOX ================= */}
+        <div className="bg-white rounded-2xl border p-4 lg:p-6">
+
+          {/* STEP 1 */}
+          {form.step === 1 && (
+            <div className="space-y-4">
+              {cart.vendors.map((vendor: any) => (
+                <div key={vendor.businessId} className="border rounded-xl p-4">
+                  <h3 className="font-semibold mb-3 text-sm">Vendor Order</h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                    <div>
+                      <p className="text-gray-500">Products</p>
+                      <p className="font-bold">{vendor.items.length}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-500">Weight</p>
+                      <p className="font-bold">{vendor.totalWeight}kg</p>
+                    </div>
+
+                    <div>
+                      <p className="text-gray-500">Subtotal</p>
+                      <p className="font-bold">
+                        ₦{vendor.subtotal.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* STEP 2 */}
+          {form.step === 2 && (
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Delivery Method</h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  onClick={() =>
+                    form.setDeliveryMode("pickUpFromOurNearestOffice")
+                  }
+                  className={`p-4 rounded-xl border text-left ${
+                    form.deliveryMode === "pickUpFromOurNearestOffice"
+                      ? "bg-black text-white"
+                      : ""
+                  }`}
+                >
+                  Pickup Center
+                </button>
+
+                <button
+                  onClick={() => form.setDeliveryMode("homeDelivery")}
+                  className={`p-4 rounded-xl border text-left ${
+                    form.deliveryMode === "homeDelivery"
+                      ? "bg-black text-white"
+                      : ""
+                  }`}
+                >
+                  Home Delivery
+                </button>
+              </div>
+            </div>
+          )}
+
+
+{/* STEP 3 */}
+{form.step === 3 && (
+  <div className="space-y-4">
+
+    {/* STATE */}
+    <select
+      value={form.selectedState}
+      onChange={(e) => form.setSelectedState(e.target.value)}
+      className="w-full border rounded-xl p-3"
+    >
+      <option value="">Select State</option>
+      {states.map((s) => (
+        <option key={s.id} value={s.name}>
+          {s.name}
+        </option>
+      ))}
+    </select>
+
+    {/* PICKUP MODE */}
+    {form.deliveryMode === "pickUpFromOurNearestOffice" && (
+      <div className="space-y-3">
+
+        <select
+          value={form.pickupCenterId}
+          onChange={(e) => form.setPickupCenterId(e.target.value)}
+          className="w-full border rounded-xl p-3"
+        >
+          <option value="">Select Pickup Center</option>
+          {pickupCenters?.map((center: any) => (
+            <option key={center._id} value={center._id}>
+              {center.name}
+            </option>
+          ))}
+        </select>
+
+        {form.selectedState && pickupCenters.length === 0 && (
+          <p className="text-sm text-red-500">
+            No pickup center available in this state
+          </p>
+        )}
+      </div>
+    )}
+
+    {/* HOME DELIVERY */}
+    {form.deliveryMode === "homeDelivery" && (
+      <div className="space-y-3">
+
+        <select
+          value={form.selectedTown}
+          onChange={(e) => form.setSelectedTown(e.target.value)}
+          className="w-full border rounded-xl p-3"
+        >
+          <option value="">Select Town</option>
+          {(townsByState[form.selectedState] || []).map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={form.nearestBusStop}
+          onChange={(e) => form.setNearestBusStop(e.target.value)}
+          className="w-full border rounded-xl p-3"
+        >
+          <option value="">Select Nearest Bus Stop</option>
+
+          {busStops?.map((stop: any) => (
+            <option key={stop._id} value={stop.nearestBusStop}>
+              {stop.nearestBusStop}
+            </option>
+          ))}
+        </select>
+
+        {/* Address (REQUIRED for checkout safety) */}
+        <input
+          value={form.address}
+          onChange={(e) => form.setAddress(e.target.value)}
+          placeholder="Enter Delivery Address"
+          className="w-full border rounded-xl p-3"
+        />
+
+        {form.selectedState && (!busStops || busStops.length === 0) && (
+          <p className="text-sm text-red-500">
+            No bus stops available
+          </p>
+        )}
+      </div>
+    )}
+
+    {/* PHONE */}
+    <input
+      value={form.phone}
+      onChange={(e) => form.setPhone(e.target.value)}
+      placeholder="Phone Number"
+      className="w-full border rounded-xl p-3"
+    />
+  </div>
+)}
+
+
+          
+
+          
+{/* STEP 4 */}
+{form.step === 4 && (
+  <div className="space-y-3">
+    <h2 className="text-lg font-semibold">Review Order</h2>
+
+    <p className="text-sm text-gray-500">
+      Please confirm your order details before proceeding to payment.
+    </p>
+
+    <div className="p-4 border rounded-xl bg-gray-50 text-sm">
+      <p><strong>State:</strong> {form.selectedState}</p>
+      <p><strong>Town:</strong> {form.selectedTown || "N/A"}</p>
+      <p><strong>Delivery Mode:</strong> {form.deliveryMode}</p>
+      <p><strong>Phone:</strong> {form.phone}</p>
+
+      {form.deliveryMode === "homeDelivery" && (
+        <>
+          <p><strong>Address:</strong> {form.address}</p>
+          <p><strong>Bus Stop:</strong> {form.nearestBusStop}</p>
+        </>
+      )}
+
+      {form.deliveryMode === "pickUpFromOurNearestOffice" && (
+        <p><strong>Pickup Center:</strong> {form.pickupCenterId}</p>
+      )}
+    </div>
+  </div>
+)}
+
+
+        </div>
+
+
+
+        
+
+        {/* ================= FOOTER BUTTONS ================= */}
+        <div className="flex gap-3 justify-between pt-4">
+
+          <button
+            onClick={prevStep}
+            disabled={form.step === 1}
+            className="px-4 py-2 border rounded-xl disabled:opacity-40"
+          >
+            Back
+          </button>
+
+          {form.step < 4 && (
+            <button
+              onClick={nextStep}
+              disabled={
+                (form.step === 2 && !form.deliveryMode) ||
+                (form.step === 3 && !form.selectedState)
+              }
+              className="px-4 py-2 bg-black text-white rounded-xl"
+            >
+              Continue
+            </button>
+          )}
+
+          {form.step === 4 && (
+            <button
+              onClick={handlePlaceOrder}
+              disabled={isPending || !isReady || !cart?.vendors?.length}
+              className="px-4 py-2 bg-black text-white rounded-xl"
+            >
+              {isPending ? "Processing..." : "Place Order"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ================= RIGHT SUMMARY (DESKTOP ONLY) ================= */}
+      <div className="hidden lg:block lg:col-span-1">
+        <div className="bg-white rounded-2xl border p-6 sticky top-6">
+
+          <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span>₦{subtotal.toLocaleString()}</span>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Shipping</span>
+              <span>₦{shippingTotal.toLocaleString()}</span>
+            </div>
+
+            <div className="border-t pt-3 flex justify-between font-bold text-lg">
+              <span>Total</span>
+              <span>₦{grandTotal.toLocaleString()}</span>
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-400 mt-3">
+            Shipping confirmed before payment.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    {/* ================= MOBILE SUMMARY BAR ================= */}
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 flex justify-between lg:hidden">
+      <div className="text-sm">
+        <p className="text-gray-500">Total</p>
+        <p className="font-bold">₦{grandTotal.toLocaleString()}</p>
+      </div>
+
+      {form.step === 4 ? (
+        <button
+          onClick={handlePlaceOrder}
+          className="bg-black text-white px-4 py-2 rounded-xl"
+        >
+          Place Order
+        </button>
+      ) : (
+        <button
+          onClick={nextStep}
+          className="bg-black text-white px-4 py-2 rounded-xl"
+        >
+          Continue
+        </button>
+      )}
+    </div>
+  </div>
+);
+
+
+
+}

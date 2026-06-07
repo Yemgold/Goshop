@@ -11,13 +11,13 @@ import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { PageHeader } from "../../components/ui/PageHeader";
 
-import { useCartStore } from "../../store/cart.store";
+import { useCart } from "../../hooks/cart/useCart";
 import { toCartPayload } from "../../mappers/cart.payload";
 
 
 const ProductList: React.FC = () => {
   const navigate = useNavigate();
-   const addToCart = useCartStore((state) => state.addToCart);
+  const { addToCart } = useCart();
 
   const {
     data: products = [],

@@ -9,7 +9,7 @@ import { Button } from "../../../components/ui/Button";
 import CreateRateModal from "../../../components/product/CreateRateModal";
 import { createBusinessShippingRate } from "../../../services/vendor/vendor.api.service";
 
-import { useBusinessShippingRates } from "../../../hooks/vendor/useBusinessShippingRates";
+import { useBusinessShippingRates } from "../../../hooks/shipping/useBusinessShippingRates";
 
 import type { BusinessShippingRate } from "../../../types/vendor/delivery.types";
 

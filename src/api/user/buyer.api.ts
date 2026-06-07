@@ -117,4 +117,22 @@ export const clearCartAPI = async () => {
 };
 
 
+export const getAllPickupCentersAPI = async () => {
+  const response = await apiClient.get(
+    `/pickup-center/get-all-pickup-centers`
+  );
+
+  return response.data;
+};
+
+
+export const getBusStopsByStateAPI = async (state: string) => {
+  const response = await apiClient.get(
+    `/home-delivery/get-state-delivery-rates-to-nearest-bus-stops/${state}`
+  );
+
+  return response.data;
+};
+
+
 

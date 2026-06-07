@@ -3,7 +3,10 @@
 import { useNavigate } from "react-router-dom";
 
 
-import { useCart } from "../../hooks/buyer/useCart";
+// import { useCart } from "../../hooks/cart/useCart";
+
+import { useCart } from "../../hooks/cart/useCart";
+
 import {
   enrichCartItems,
   calculateCartTotal,
@@ -14,7 +17,7 @@ import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { PageHeader } from "../../components/ui/PageHeader";
 
-// import { CartSkeleton } from "../../components/ui/empty-states/CartSkeleton"; 
+
  import { EmptyCartState } from "../../components/ui/empty-states/EmptyCartState";
 
 
@@ -141,6 +144,7 @@ export default function Cart() {
           >
             Checkout
           </Button>
+          
         </div>
       </Card>
     </div>

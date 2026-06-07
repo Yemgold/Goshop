@@ -1,50 +1,6 @@
 
 
 
-// type Location = {
-//   state: string;
-//   town: string;
-// };
-
-// function normalize(value: string) {
-//   return value
-//     .trim()
-//     .toLowerCase()
-//     .replace(/\s+/g, "")
-//     .replace(/-/g, "");
-// }
-
-// export function getDeliveryFee(
-//   buyer: Location,
-//   vendor: Location
-// ) {
-//   const buyerState = normalize(buyer.state);
-//   const buyerTown = normalize(buyer.town);
-
-//   const vendorState = normalize(vendor.state);
-//   const vendorTown = normalize(vendor.town);
-
-//   // SAME TOWN
-//   if (
-//     buyerState === vendorState &&
-//     buyerTown === vendorTown
-//   ) {
-//     return 1500;
-//   }
-
-//   // SAME STATE
-//   if (buyerState === vendorState) {
-//     return 3000;
-//   }
-
-//   // DIFFERENT STATE
-//   return 6000;
-// }
-
-
-
-
-
 
 
 import {

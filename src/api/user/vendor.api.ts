@@ -60,6 +60,7 @@ export const updateVendorOrderAPI = async (
 
 export const getVendorProductsAPI = async (): Promise<Product[]> => {
   const res = await apiClient.get("/vendor/products");
+  console.log("VENDOR PRODUCTS RESPONSE:", res.data);
   return res.data;
 };
 

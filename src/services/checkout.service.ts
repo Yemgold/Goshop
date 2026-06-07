@@ -13,8 +13,9 @@ export const checkoutService = {
   ): Promise<CreateOrderResponse> => {
     const res = await apiClient.post(
       "/orders/create-order",
-      payload
-    );
+      payload );
+
+console.log("🔥 RAW PAYLOAD SENT:", JSON.stringify(payload, null, 2));
 
     return res.data;
   },

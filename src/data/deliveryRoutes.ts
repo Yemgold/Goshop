@@ -15,6 +15,6 @@ export const neighboringStates: Record<string, string[]> = {
   ogun: ["lagos", "oyo"],
   oyo: ["ogun", "osun"],
 
-  ekiti: ["ondo", "osun"],
+  ekiti: ["ondo", "osun" , "ogun"],
   ondo: ["ekiti"],
 };

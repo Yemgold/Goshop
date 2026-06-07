@@ -48,31 +48,6 @@ export interface CreateOrderPayload {
 
 
 
-
-
-
-
-
-
-// export interface CreateOrderPayload {
-//   cartId: string;
-
-//   items: {
-//     productId: string;
-//     businessId: string;
-//     quantity: number;
-//   }[];
-
-//   customerId: string;
-//   deliveryAddress: string | null;
-//   contactPhone: string;
-//   idempotencyKey: string;
-
-//   deliveryFee: number;  
-
-//   notes?: string;
-// }
-
 /* =========================
    PAYMENT INTENT
 ========================= */

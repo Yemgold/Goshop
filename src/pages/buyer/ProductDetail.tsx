@@ -8,7 +8,7 @@ import { useState } from "react";
 
 import { useBuyerProduct } from "../../hooks/buyer/useBuyerProduct";
 
-import { useCartStore } from "../../store/cart.store";
+import { useCart } from "../../hooks/cart/useCart"; 
 
 import { toCartPayload } from "../../mappers/cart.payload";
 
@@ -21,7 +21,7 @@ export default function ProductDetail() {
 
   const navigate = useNavigate();
 
-  const addToCart = useCartStore((state) => state.addToCart);
+  const { addToCart } = useCart();
 
   const [quantity, setQuantity] = useState(1);
 
@@ -66,18 +66,17 @@ export default function ProductDetail() {
 
   /* ================= ADD TO CART ================= */
 
-  const handleAddToCart = async () => {
-    try {
-      await addToCart(
-        toCartPayload(product, quantity)
-      );
+ const handleAddToCart = async () => {
+  try {
+    await addToCart(
+  toCartPayload(product, quantity)
+);
 
-      navigate("/buyers/cart");
-    } catch (err) {
-      console.error("Add to cart failed", err);
-    }
-  };
-
+    navigate("/buyers/cart");
+  } catch (err) {
+    console.error("Add to cart failed", err);
+  }
+};
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
 

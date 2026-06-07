@@ -1,6 +1,6 @@
 
 
-import { useShippingRate } from "../../hooks/buyer/useShippingRate";
+import { useShippingRate } from "./useShippingRate";
 
 export function useShippingCalculator(
   businessId?: string,
