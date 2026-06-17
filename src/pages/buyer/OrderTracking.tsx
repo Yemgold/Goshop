@@ -3,7 +3,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-import type { TrackingOrder } from "../../types/buyer.types";
+import type { TrackingOrder } from "../../types";
 
 import { Card } from "../../components/ui/Card";
 import { PageHeader } from "../../components/ui/PageHeader";

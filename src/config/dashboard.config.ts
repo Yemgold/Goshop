@@ -61,4 +61,43 @@ export const dashboardConfig: Record<UserRole, DashboardConfig> = {
       { label: "Campaigns", to: "/promoter/campaigns" },
     ],
   },
+
+    pickup_center: {
+    title: "Pickup Center Dashboard",
+    subtitle: "Manage customer pickups",
+    nav: [
+      {
+        label: "Dashboard",
+        to: "/pickup/dashboard",
+      },
+      {
+        label: "Incoming Orders",
+        to: "/pickup/orders",
+      },
+      {
+        label: "Ready For Pickup",
+        to: "/pickup/ready",
+      },
+    ],
+  },
+
+   admin: {
+    title: "Admin Dashboard",
+    subtitle: "System administration",
+    nav: [
+      {
+        label: "Dashboard",
+        to: "/admin/dashboard",
+      },
+      {
+        label: "Users",
+        to: "/admin/users",
+      },
+      {
+        label: "Reports",
+        to: "/admin/reports",
+      },
+    ],
+  },
+
 };

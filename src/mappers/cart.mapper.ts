@@ -1,4 +1,13 @@
+export type EnrichedCartItem = {
+  productId: string;
+  quantity: number;
 
+  title: string;
+  price: number;
+  image: string;
+  category: string;
+  weight: number;
+};
 
 const normalizeId = (id: any) =>
   String(id?._id ?? id?.id ?? id ?? "").trim();

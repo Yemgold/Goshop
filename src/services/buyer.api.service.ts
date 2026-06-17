@@ -15,7 +15,11 @@ import {
   getBusStopsByStateAPI,
   verifyPaymentAPI,
   getAllPickupCentersAPI,
+  // getProductByIdAPI,
 } from "../api/user/buyer.api";
+
+
+ import {getBuyerProductByIdAPI } from "../api/product.api";
 
 
 /* ================= SERVICE ================= */
@@ -43,6 +47,9 @@ export const buyerService = {
 
   /* Pickup */
   getPickupCenters: getAllPickupCentersAPI,
+
+    /* product */
+  getProductById: getBuyerProductByIdAPI,
 
   /* BusStop */
   getBusStopsByState: getBusStopsByStateAPI,
