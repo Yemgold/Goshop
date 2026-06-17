@@ -56,6 +56,9 @@ export function useCheckout() {
       shippingFeeSummation: number;
       deliveryFeeSummation: number;
     };
+
+    deliveryAddress?: string;
+
   }) => {
     const customerId = user?.id;
 
@@ -144,15 +147,15 @@ const vendorOrders = payload.vendorsWithShipping.map((v: any) => ({
 
       buyerState: payload.form.selectedState || "",
 
-      deliveryAddress:
-        payload.form.deliveryMode === "homeDelivery"
-          ? {
-              street: payload.form.address,
-              town: payload.form.selectedTown,
-              state: payload.form.selectedState,
-              country: "Nigeria",
-            }
-          : null,
+   deliveryAddress:
+  payload.form.deliveryMode === "homeDelivery"
+    ? {
+        street: payload.form.address,
+        town: payload.form.selectedTown,
+        state: payload.form.selectedState,
+        country: "Nigeria",
+      }
+    : null,
 
       nearestBusStop:
         payload.form.deliveryMode === "homeDelivery"

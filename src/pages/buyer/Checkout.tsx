@@ -141,27 +141,63 @@ export default function Checkout() {
 
   /* ================= PLACE ORDER ================= */
 
-  const handlePlaceOrder = async () => {
-    console.log("PLACE ORDER CLICKED");
+const handlePlaceOrder = async () => {
+  console.log("PLACE ORDER CLICKED");
 
-    if (!cart?.vendors?.length) {
-      toast.error("Cart not ready");
-      return;
-    }
+  if (!cart?.vendors?.length) {
+    toast.error("Cart not ready");
+    return;
+  }
 
-    await placeOrder({
-      cart,
-      cartData,
-      form,
-      vendorsWithShipping,
-      contactPhone: form.phone,
-      products,
-      shippingSummary: {
-        shippingFeeSummation: shipping.shippingFeeSummation ?? 0,
-        deliveryFeeSummation: shipping.deliveryFeeSummation ?? 0,
-      },
-    });
-  };
+  const deliveryAddress = JSON.stringify({
+    street: form.address,
+    town: form.selectedTown,
+    state: form.selectedState,
+    country: "Nigeria",
+  });
+
+  await placeOrder({
+    cart,
+    cartData,
+    form,
+    vendorsWithShipping,
+    contactPhone: form.phone,
+    products,
+    shippingSummary: {
+      shippingFeeSummation: shipping.shippingFeeSummation ?? 0,
+      deliveryFeeSummation: shipping.deliveryFeeSummation ?? 0,
+    },
+
+    deliveryAddress,
+  });
+};
+
+
+
+
+
+
+  // const handlePlaceOrder = async () => {
+  //   console.log("PLACE ORDER CLICKED");
+
+  //   if (!cart?.vendors?.length) {
+  //     toast.error("Cart not ready");
+  //     return;
+  //   }
+
+  //   await placeOrder({
+  //     cart,
+  //     cartData,
+  //     form,
+  //     vendorsWithShipping,
+  //     contactPhone: form.phone,
+  //     products,
+  //     shippingSummary: {
+  //       shippingFeeSummation: shipping.shippingFeeSummation ?? 0,
+  //       deliveryFeeSummation: shipping.deliveryFeeSummation ?? 0,
+  //     },
+  //   });
+  // };
 
 
 
