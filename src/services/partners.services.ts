@@ -4,9 +4,26 @@
 
 import { apiClient } from "../api/core/api.client";
 import { authService } from "./auth.service";
-import type { BecomePartnerPayload } from "../types/partners.types";
+import type { BecomePartnerPayload, BusinessProfilePayload } from "../types/partners.types";
 
 export const partnersService = {
+
+
+  /* ================= BUSINESS PARTNER PROFILE ================= */
+
+partnersBusinessProfile: async (
+  businessId: string,
+  data: BusinessProfilePayload
+) => {
+  const result = await apiClient.post(
+    `/businesses/add-business-address/${businessId}`,
+    data
+  );
+
+  return result.data;
+},
+
+
 
   /* ================= PARTNER STATUS ================= */
   getPartnerStatus: async () => {
@@ -62,4 +79,33 @@ export const partnersService = {
 
     return result.data;
   },
+
+
+ /* ================= BECOME PICKUP CENTER ================= */
+  partnersBecomePickupCenter: async (data: BecomePartnerPayload) => {
+    const result = await apiClient.post(
+      "/partners/become-pickup-center",
+      data
+    );
+
+    const updatedUser = await authService.getMe();
+    console.log("[auth/me refreshed]", updatedUser.data);
+
+    return result.data;
+  },
+
+
+
+
+
 };
+
+
+
+
+ 
+
+
+
+
+

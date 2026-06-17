@@ -94,7 +94,7 @@ import Customers from "../../pages/vendor/Customer Management/Customers";
 
 import ProductPerformance from "../../pages/vendor/Product Management/ProductPerformance";
 import Categories from "../../pages/vendor/Product Management/Categories";
-import Discounts from "../../pages/vendor/Discounts";
+import Discounts from "../../pages/vendor/Product Management/Discounts";
 
 /* =========================
    RIDER
@@ -167,6 +167,7 @@ import PromoterProfile from "../../pages/promoter/Profile";
 import ViralProductPage from "../../pages/vendor/Product Management/ViralProductPage";
 import ProductShareAnalytics from "../../pages/vendor/Product Management/ProductShareAnalytics";
 import ViralFeedPage from "../../pages/vendor/Product Management/ViralFeedPage";
+import VerifyPaymentPage from "../../pages/payments/PaystackCallback";
 
 /* =========================
    APP ENTRY
@@ -247,17 +248,18 @@ export default function AppRouter() {
   {/* CHECKOUT */}
   <Route path="checkout" element={<Checkout />}/>
 
- 
 
   {/* ORDERS */}
   <Route path="orders" element={<Orders />} />
+
+    {/* PAYMENT */}
+<Route path="payment/verify" element={<VerifyPaymentPage/>} />
 
   <Route path="order-success"element={<OrderSuccess />}/>
 
   {/* TRACKING */}
   <Route path="track/:orderId"element={<OrderTracking />}/>
 </Route>
-
 
 
 

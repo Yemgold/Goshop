@@ -1,5 +1,6 @@
 
 
+
 import { ProSidebar } from "./ProSidebar";
 
 import {
@@ -23,15 +24,28 @@ import type { PartnerRole } from "../../types/roles";
 
 type Props = {
   roles: PartnerRole[];
-  onAddPartner: () => void;
+  onAddPartner?: () => void;
+  onOpenBusinessProfile?: () => void;
+  hasBusinessProfile?: boolean;
 };
 
 export function RiderSidebar({
   roles,
   onAddPartner,
+  onOpenBusinessProfile,
+  hasBusinessProfile = false,
 }: Props) {
   // ================= CHECK IF USER CAN STILL UPGRADE =================
-  const canUpgrade = roles.length < 3;
+  const canUpgrade = roles.length < 4;
+
+  // ================= UPGRADE FLOW =================
+  const handleUpgradePartnership = () => {
+    if (hasBusinessProfile) {
+      onAddPartner?.();
+    } else {
+      onOpenBusinessProfile?.();
+    }
+  };
 
   // ================= MENU =================
   const menu = [
@@ -199,10 +213,9 @@ export function RiderSidebar({
       menu={menu}
       footer={
         <div className="p-3 space-y-3 border-t bg-white">
-          {/* ================= UPGRADE PARTNERSHIP ================= */}
-          {canUpgrade && onAddPartner && (
+          {canUpgrade && (
             <button
-              onClick={onAddPartner}
+              onClick={handleUpgradePartnership}
               className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-800 text-sm font-medium hover:bg-gray-100 transition"
             >
               <Sparkles size={16} />

@@ -1,60 +1,27 @@
 
 
-// import { ShoppingCart } from "lucide-react";
-// import { Link } from "react-router-dom";
-// import { useQuery } from "@tanstack/react-query";
-// import { getOrCreateCartAPI } from "../../api/user/buyer.api"; 
-// import type { Cart, CartItem } from "../../types/buyer.types";
-
-// export default function CartIcon() {
-//   const { data: cart } = useQuery<Cart>({
-//     queryKey: ["cart"],
-//     queryFn: getOrCreateCartAPI,
-//   });
-
-//   const cartCount =
-//     cart?.items?.reduce(
-//       (total: number, item: CartItem) => total + item.quantity,
-//       0
-//     ) || 0;
-
-//   return (
-//     <Link to="/buyers/cart" className="relative p-2">
-//       <ShoppingCart size={22} />
-
-//       {cartCount > 0 && (
-//         <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center font-bold">
-//           {cartCount}
-//         </span>
-//       )}
-//     </Link>
-//   );
-// }
-
-
-
-
 
 import { ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getOrCreateCartAPI } from "../../api/user/buyer.api";
-import type { Cart, CartItem } from "../../types/buyer.types";
-import { useEffect, useState } from "react";
+import { getCartAPI } from "../../api/user/buyer.api"; // ✅ IMPORTANT CHANGE
+import type { Cart } from "../../types";
+import { useEffect, useState, useMemo } from "react";
 
 export default function CartIcon() {
+  /* ================= CART QUERY ================= */
   const { data: cart } = useQuery<Cart>({
     queryKey: ["cart"],
-    queryFn: getOrCreateCartAPI,
+    queryFn: getCartAPI, // ✅ NO MORE getOrCreateCartAPI
   });
 
-  const cartCount =
-    cart?.items?.reduce(
-      (total: number, item: CartItem) => total + item.quantity,
-      0
-    ) || 0;
+  /* ================= CART COUNT ================= */
 
-  // 👇 animation trigger state
+const cartCount = useMemo(() => {
+  return cart?.items?.length || 0;
+}, [cart]);
+
+  /* ================= ANIMATION STATE ================= */
   const [animate, setAnimate] = useState(false);
   const [prevCount, setPrevCount] = useState(cartCount);
 
@@ -68,9 +35,9 @@ export default function CartIcon() {
     }
   }, [cartCount, prevCount]);
 
+  /* ================= UI ================= */
   return (
     <Link to="/buyers/cart" className="relative p-2 inline-flex">
-
       {/* ICON */}
       <ShoppingCart
         size={22}
@@ -80,7 +47,6 @@ export default function CartIcon() {
       {/* BADGE */}
       {cartCount > 0 && (
         <span className="absolute -top-1 -right-1">
-
           {/* pulse ring */}
           <span className="absolute inline-flex h-4 w-4 rounded-full bg-red-400 opacity-60 animate-ping" />
 
@@ -96,10 +62,8 @@ export default function CartIcon() {
           >
             {cartCount}
           </span>
-
         </span>
       )}
-
     </Link>
   );
 }

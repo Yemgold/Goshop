@@ -1,365 +1,365 @@
 
 
-export interface Vendor {
-  id: number;
-  name: string;
-  rating: number;
-}
+// export interface Vendor {
+//   id: number;
+//   name: string;
+//   rating: number;
+// }
 
 
-type DeliveryRule = {
-  state: string;
-  price: number;
-  _id?: string;
-};
+// type DeliveryRule = {
+//   state: string;
+//   price: number;
+//   _id?: string;
+// };
 
-export type ShippingRate = {
-  destinationState: string;
-  originState: string;
+// export type ShippingRate = {
+//   destinationState: string;
+//   originState: string;
 
-  weightRanges: {
-    min: number;
-    max: number | null;
-    price: number;
-  }[];
-};
+//   weightRanges: {
+//     min: number;
+//     max: number | null;
+//     price: number;
+//   }[];
+// };
 
-/* ================= PRODUCTS ================= */
+// /* ================= PRODUCTS ================= */
 
-export type MediaType = "image" | "video";
+// export type MediaType = "image" | "video";
 
-export interface ProductMedia {
-  _id?: string;
-  type: MediaType;
-  url: string;
-  publicUrl?: string;
-}
+// export interface ProductMedia {
+//   _id?: string;
+//   type: MediaType;
+//   url: string;
+//   publicUrl?: string;
+// }
 
-export type Product = {
-  _id: string;
-  id?: string;
+// export type Product = {
+//   _id: string;
+//   id?: string;
 
-  title?: string;
-  name: string;
+//   title?: string;
+//   name: string;
 
-  description?: string;
+//   description?: string;
 
-  price: number;
+//   price: number;
 
-  image?: string;
+//   image?: string;
 
-  weight?: number;
+//   weight?: number;
 
-  deliveryRules?: DeliveryRule[];
+//   deliveryRules?: DeliveryRule[];
 
-  category?: string;
+//   category?: string;
 
-  inStock?: boolean;
+//   inStock?: boolean;
 
-  vendor?:
-  | string
-  | {
-      _id: string;
-      businessName?: string;
+//   vendor?:
+//   | string
+//   | {
+//       _id: string;
+//       businessName?: string;
 
       
-    };
+//     };
 
-  businessId?: {
-  _id: string;
+//   businessId?: {
+//   _id: string;
 
-  businessName: string;
+//   businessName: string;
 
-  businessAddress?: {
-    state?: string;
-    town?: string;
-    address?: string;
-  };
-};
+//   businessAddress?: {
+//     state?: string;
+//     town?: string;
+//     address?: string;
+//   };
+// };
 
-  stock?: number;
+//   stock?: number;
 
-  media?: ProductMedia[];
+//   media?: ProductMedia[];
 
-  shippingRates?: ShippingRate[];  
-};
+//   shippingRates?: ShippingRate[];  
+// };
 
-/* ================= ORDERS ================= */
+// /* ================= ORDERS ================= */
 
-export type OrderStatus =
-  | "pending"
-  | "processing"
-  | "completed"
-  | "cancelled";
+// export type OrderStatus =
+//   | "pending"
+//   | "processing"
+//   | "completed"
+//   | "cancelled";
 
-export interface Order {
-  id: string;
+// export interface Order {
+//   id: string;
 
-  items: {
-    id: string;
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
+//   items: {
+//     id: string;
+//     name: string;
+//     quantity: number;
+//     price: number;
+//   }[];
 
-  total: number;
+//   total: number;
 
-  date: string;
+//   date: string;
 
-  status: OrderStatus;
-}
+//   status: OrderStatus;
+// }
 
-/* ================= TRACKING ================= */
+// /* ================= TRACKING ================= */
 
-export interface TrackingOrder {
-  id: string;
+// export interface TrackingOrder {
+//   id: string;
 
-  status: string;
+//   status: string;
 
-  deliveryStatus: string;
+//   deliveryStatus: string;
 
-  estimatedDelivery: string;
+//   estimatedDelivery: string;
 
-  timeline: {
-    step: string;
-    completed: boolean;
-    time?: string;
-  }[];
+//   timeline: {
+//     step: string;
+//     completed: boolean;
+//     time?: string;
+//   }[];
 
-  rider?: {
-    id: string;
-    name: string;
-    phone: string;
-    vehicle: string;
-  };
-}
+//   rider?: {
+//     id: string;
+//     name: string;
+//     phone: string;
+//     vehicle: string;
+//   };
+// }
 
-/* ================= CHECKOUT ================= */
+// /* ================= CHECKOUT ================= */
 
-export type OrderItemPayload = {
-  productId: string;
-  name: string;
-  price: number;
-  quantity: number;
-};
+// export type OrderItemPayload = {
+//   productId: string;
+//   name: string;
+//   price: number;
+//   quantity: number;
+// };
 
-export type VendorOrderPayload = {
-  businessId: string;
+// export type VendorOrderPayload = {
+//   businessId: string;
 
-  items: OrderItemPayload[];
+//   items: OrderItemPayload[];
 
-  subtotal: number;
+//   subtotal: number;
 
-  status: OrderStatus;
-};
+//   status: OrderStatus;
+// };
 
-export interface CreateOrderPayload {
-  cartId: string;
+// export interface CreateOrderPayload {
+//   cartId: string;
 
-  items: {
-    productId: string;
-    businessId: string;
-    quantity: number;
-  }[];
+//   items: {
+//     productId: string;
+//     businessId: string;
+//     quantity: number;
+//   }[];
 
-  customerId: string;
+//   customerId: string;
 
-  deliveryAddress: string;
+//   deliveryAddress: string;
 
-  contactPhone: string;
+//   contactPhone: string;
 
-  idempotencyKey: string;
+//   idempotencyKey: string;
 
-  deliveryFee: number;
+//   deliveryFee: number;
 
-  notes?: string;
-}
+//   notes?: string;
+// }
 
-export type CheckoutPayload = {
-  customerId: string;
+// export type CheckoutPayload = {
+//   customerId: string;
 
-  vendorOrders: VendorOrderPayload[];
+//   vendorOrders: VendorOrderPayload[];
 
-  subtotal: number;
+//   subtotal: number;
 
-  deliveryFee: number;
+//   deliveryFee: number;
 
-  total: number;
+//   total: number;
 
-  deliveryAddress: string;
+//   deliveryAddress: string;
 
-  idempotencyKey: string;
+//   idempotencyKey: string;
 
-  contactPhone: string;
+//   contactPhone: string;
 
-  notes?: string;
+//   notes?: string;
 
-  isPaid: boolean;
-};
+//   isPaid: boolean;
+// };
 
-export type CheckoutResponse = {
-  success: boolean;
+// export type CheckoutResponse = {
+//   success: boolean;
 
-  message: string;
+//   message: string;
 
-  data: {
-    order: {
-      _id: string;
+//   data: {
+//     order: {
+//       _id: string;
 
-      customerId: string;
+//       customerId: string;
 
-      subtotal: number;
+//       subtotal: number;
 
-      total: number;
+//       total: number;
 
-      deliveryFee: number;
+//       deliveryFee: number;
 
-      deliveryAddress: string;
+//       deliveryAddress: string;
 
-      contactPhone: string;
+//       contactPhone: string;
 
-      status: OrderStatus;
+//       status: OrderStatus;
 
-      isPaid: boolean;
-    };
+//       isPaid: boolean;
+//     };
 
-    paymentIntent: {
-      provider: string;
+//     paymentIntent: {
+//       provider: string;
 
-      reference: string;
+//       reference: string;
 
-      providerReference: string;
+//       providerReference: string;
 
-      paymentUrl: string;
-    };
-  };
-};
+//       paymentUrl: string;
+//     };
+//   };
+// };
 
-/* ================= CART ================= */
+// /* ================= CART ================= */
 
-export interface CartItem {
-  id: string;
+// export interface CartItem {
+//   id: string;
 
-  title?: string;
+//   title?: string;
 
-  name: string;
+//   name: string;
 
-  price: number;
+//   price: number;
 
-  image?: string;
+//   image?: string;
 
-  vendor: string;
+//   vendor: string;
 
-  acceptsGiftCard?: boolean;
+//   acceptsGiftCard?: boolean;
 
-  quantity: number;
+//   quantity: number;
 
-  productId: string;
+//   productId: string;
 
-  businessId: string;
-}
+//   businessId: string;
+// }
 
-export type CartPayload = {
-  productId: string;
+// export type CartPayload = {
+//   productId: string;
 
-  businessId: string;
+//   businessId: string;
 
-  quantity: number;
+//   quantity: number;
 
-  // optional frontend UI helpers
-  name?: string;
+//   // optional frontend UI helpers
+//   name?: string;
 
-  price?: number;
+//   price?: number;
 
-  image?: string;
+//   image?: string;
 
-  weight?: string;
-};
+//   weight?: string;
+// };
 
-export interface Cart {
-  userId: string;
-  items: CartItem[];
-  total: number;
-}
+// export interface Cart {
+//   userId: string;
+//   items: CartItem[];
+//   total: number;
+// }
 
-/**
- * UI Cart item
- */
-export type CartItemUI = {
-  id: string;
+// /**
+//  * UI Cart item
+//  */
+// export type CartItemUI = {
+//   id: string;
 
-  title: string;
+//   title: string;
 
-  price: number;
+//   price: number;
 
-  image: string;
+//   image: string;
 
-  vendor: string;
+//   vendor: string;
 
-  quantity: number;
-};
+//   quantity: number;
+// };
 
-/**
- * Backend Cart item
- */
-export type CartItemB = {
-  productId: string;
-  businessId: string;
-  quantity: number;
+// /**
+//  * Backend Cart item
+//  */
+// export type CartItemB = {
+//   productId: string;
+//   businessId: string;
+//   quantity: number;
 
 
-  name?: string;
-  price?: number;
-  image?: string;
+//   name?: string;
+//   price?: number;
+//   image?: string;
 
-  weight?: string;
+//   weight?: string;
   
 
-};
+// };
 
-export type OrderItem = {
-  id: string;
+// export type OrderItem = {
+//   id: string;
 
-  title: string;
+//   title: string;
 
-  quantity: number;
+//   quantity: number;
 
-  price: number;
-};
+//   price: number;
+// };
 
-/* ================= DASHBOARD ================= */
+// /* ================= DASHBOARD ================= */
 
-export interface DashboardStats {
-  cartItems: number;
-  pendingOrders: number;
-  completedOrders: number;
-  totalOrders: number;
-}
+// export interface DashboardStats {
+//   cartItems: number;
+//   pendingOrders: number;
+//   completedOrders: number;
+//   totalOrders: number;
+// }
 
-export interface DashboardRecentOrder {
-  _id: string;
-  total: number;
-  status: OrderStatus;
-  createdAt: string;
-}
+// export interface DashboardRecentOrder {
+//   _id: string;
+//   total: number;
+//   status: OrderStatus;
+//   createdAt: string;
+// }
 
-export interface DashboardProduct {
-  _id: string;
-  name: string;
-  price: number;
-  media: ProductMedia[];
-}
+// export interface DashboardProduct {
+//   _id: string;
+//   name: string;
+//   price: number;
+//   media: ProductMedia[];
+// }
 
-export interface DashboardCart {
-  itemsCount: number;
-}
+// export interface DashboardCart {
+//   itemsCount: number;
+// }
 
-export interface DashboardData {
-  stats: DashboardStats;
+// export interface DashboardData {
+//   stats: DashboardStats;
 
-  recentOrders: DashboardRecentOrder[];
+//   recentOrders: DashboardRecentOrder[];
 
-  products: DashboardProduct[];
+//   products: DashboardProduct[];
 
-  cart: DashboardCart;
-}
+//   cart: DashboardCart;
+// }

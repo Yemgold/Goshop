@@ -1,5 +1,5 @@
 
-import { apiClient } from "../api/core/api.client";
+import { apiClient } from "../core/api.client";
 
 
 export const getStatePickupCentersAPI =

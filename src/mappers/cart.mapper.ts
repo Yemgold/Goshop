@@ -1,164 +1,68 @@
-// import type {
-//   CartItem,
-//   Product,
-// } from "../types/buyer.types";
-
-// export type EnrichedCartItem = CartItem & {
-//   title: string;
-//   price: number;
-//   image: string;
-//   category: string;
-//   description: string;
-// };
-
-// export const enrichCartItems = (
-//   items: CartItem[] = [],
-//   products: Product[] | any = []
-// ): EnrichedCartItem[] => {
-//   /* ================= SAFE PRODUCTS ================= */
-
-//   const safeProducts = Array.isArray(products)
-//     ? products
-//     : Array.isArray(products?.data)
-//     ? products.data
-//     : Array.isArray(products?.products)
-//     ? products.products
-//     : [];
-
-//   console.log("CART PRODUCTS:", safeProducts);
-
-//   return items.map((item) => {
-//     /* ================= FIND PRODUCT ================= */
-
-//     const product = safeProducts.find((p: any) => {
-//       const pid = p?._id || p?.id;
-//       return pid === item.productId;
-//     });
-
-//     console.log("CART PRODUCT MATCH:", {
-//       item,
-//       product,
-//     });
-
-//     /* ================= SAFE IMAGE ================= */
-
-//     const image =
-//       Array.isArray(product?.media) &&
-//       product.media.length > 0
-//         ? product.media[0]?.url
-//         : product?.image ||
-//           "/placeholder.png";
-
-//     /* ================= RETURN ================= */
-
-//     return {
-//       ...item,
-
-//       title:
-//         product?.name ||
-//         product?.title ||
-//         "Unknown Product",
-
-//       price: Number(product?.price || 0),
-
-//       image,
-
-//       category: product?.category || "",
-
-//       description:
-//         product?.description || "",
-//     };
-//   });
-// };
-
-// export const calculateCartTotal = (
-//   items: EnrichedCartItem[] = []
-// ): number => {
-//   return items.reduce(
-//     (sum: number, item: EnrichedCartItem) =>
-//       sum + Number(item.price || 0) * Number(item.quantity || 0),
-//     0
-//   );
-// };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import type { CartItem, Product } from "../types/buyer.types";
-
-export type EnrichedCartItem = CartItem & {
-  title: string;
-  price: number;
-  image: string;
-  category: string;
-  description: string;
-
-  // ✅ SHIPPING (IMPORTANT)
-  shippingRates?: any[];
-  baseShippingPrice?: number;
-};
-
-/* ================= HELPERS ================= */
-
-const getProductId = (p: any) => p?._id || p?.id;
-
-/* ================= MAIN MAPPER ================= */
+const normalizeId = (id: any) =>
+  String(id?._id ?? id?.id ?? id ?? "").trim();
 
 export const enrichCartItems = (
-  items: CartItem[] = [],
-  products: Product[] = []
-): EnrichedCartItem[] => {
-  if (!Array.isArray(items) || !Array.isArray(products)) {
-    return [];
-  }
+  items: any[] = [],
+  products: any[] = []
+) => {
+  if (!Array.isArray(items)) return [];
+
+  /* ================= PRODUCT MAP ================= */
+
+  const productMap = new Map(
+    (Array.isArray(products) ? products : []).map((p: any) => [
+      normalizeId(p),
+      p,
+    ])
+  );
+
+  /* ================= ENRICH ITEMS ================= */
 
   return items.map((item) => {
-    const product = products.find((p) => getProductId(p) === item.productId);
+    if (!item) return item;
 
-    console.log("CART PRODUCT MATCH:", { item, product });
+    const product = productMap.get(
+      normalizeId(item?.productId)
+    );
+
+    /* ================= IMAGE RESOLVER ================= */
 
     const image =
-      Array.isArray(product?.media) && product.media.length > 0
-        ? product.media[0].url
-        : (product as any)?.image || "/placeholder.png";
+      product?.media?.find(
+        (m: any) => m?.type === "image" && m?.url
+      )?.url ||
+      product?.media?.[0]?.url ||
+      item?.image ||
+      product?.image ||
+      "/placeholder.png";
 
     return {
       ...item,
 
-      title: product?.name || product?.title || "Unknown Product",
-      price: Number(product?.price || 0),
+      title:
+        product?.name ||
+        product?.title ||
+        item?.name ||
+        "Unknown Product",
+
+      price:
+        product?.price ??
+        item?.price ??
+        0,
+
       image,
-      category: product?.category || "",
-      description: product?.description || "",
 
-      // ✅ SHIPPING DATA (FOR CHECKOUT LATER)
-      shippingRates: product?.shippingRates || [],
+      category:
+        product?.category ??
+        item?.category ??
+        "",
 
-      baseShippingPrice:
-        product?.shippingRates?.[0]?.weightRanges?.[0]?.price ?? 0,
+      weight:
+        product?.weight ??
+        item?.weight ??
+        0,
     };
   });
-};
-
-/* ================= TOTAL ================= */
-
-export const calculateCartTotal = (
-  items: EnrichedCartItem[] = []
-): number => {
-  return items.reduce((sum, item) => {
-    return sum + (item.price || 0) * (item.quantity || 0);
-  }, 0);
 };

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { paymentService } from "../../services/paymentService"; 
 
-export default function PaystackCallback() {
+export default function VerifyPaymentPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
 

@@ -1,36 +1,14 @@
 
 
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getVendorCategories } from "../../services/vendor/vendor.service";
-import type{ VendorCategoriesData } from "../../types/vendor/vendor.types"; 
+import type { VendorCategoriesData } from "../../types/vendor/vendor.types";
 
 export const useVendorCategories = () => {
-  const [data, setData] =
-    useState<VendorCategoriesData | null>(null);
-
-  const [isLoading, setIsLoading] =
-    useState(true);
-
-  const [isError, setIsError] =
-    useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-
-        const res = await getVendorCategories();
-
-        setData(res);
-      } catch {
-        setIsError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  return { data, isLoading, isError };
+  return useQuery<VendorCategoriesData>({
+    queryKey: ["vendor-categories"],
+    queryFn: getVendorCategories,
+    retry: 2,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
 };

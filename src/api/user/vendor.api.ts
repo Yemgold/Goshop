@@ -1,15 +1,12 @@
 
-
 import { apiClient } from "../core/api.client";
 
 import type {
   DashboardData,
   AnalyticsData,
-  VendorOrder,
   Order,
   Product,
 } from "../../types/vendor/vendor.types";
-
 
 /* ================= DASHBOARD ================= */
 
@@ -18,30 +15,16 @@ export const getVendorDashboardAPI = async (): Promise<DashboardData> => {
   return res.data;
 };
 
-/* ================= ANALYTICS ================= */
-
-export const getVendorAnalyticsAPI = async (): Promise<AnalyticsData> => {
-  const res = await apiClient.get("/vendor/analytics");
-  return res.data;
-};
-
-
 
 /* ================= ORDERS ================= */
 
 
 
-export const getVendorOrdersAPI =
-  async (): Promise<VendorOrder[]> => {
-    const res = await apiClient.get("/vendor/orders");
-
-    return res.data.data;
-  };
 
 export const getVendorOrderByIdAPI = async (
   id: string
 ): Promise<Order> => {
-  const res = await apiClient.get(`/vendor/orders/${id}`);
+  const res = await apiClient.get(`/orders/vendor/${id}`);
   return res.data;
 };
 
@@ -56,6 +39,14 @@ export const updateVendorOrderAPI = async (
   return res.data;
 };
 
+
+
+
+
+
+
+
+
 /* ================= PRODUCTS ================= */
 
 export const getVendorProductsAPI = async (): Promise<Product[]> => {
@@ -68,6 +59,14 @@ export const deleteVendorProductAPI = async (
   id: string
 ): Promise<Product[]> => {
   const res = await apiClient.delete(`/vendor/products/${id}`);
+  return res.data;
+};
+
+
+/* ================= ANALYTICS ================= */
+
+export const getVendorAnalyticsAPI = async (): Promise<AnalyticsData> => {
+  const res = await apiClient.get("/vendor/analytics");
   return res.data;
 };
 

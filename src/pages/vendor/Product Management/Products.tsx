@@ -146,26 +146,36 @@ const handleDelete = (productId?: string) => {
         </div>
 
         {/* ================= EMPTY STATE ================= */}
-        {products.length === 0 ? (
-          <div className="bg-white rounded-2xl border p-10 text-center space-y-4">
-            <h2 className="text-lg font-semibold">
-              No Products Found
-            </h2>
 
-            <p className="text-gray-500">
-              You have not uploaded any products yet.
-            </p>
+{!products?.length ? (
+  <div className="bg-white rounded-2xl border p-10 text-center space-y-4">
+    <div className="text-5xl">📦</div>
 
-            <div className="flex justify-center">
-              <Button
-                onClick={() =>
-                  setOpenCreateModal(true)
-                }
-              >
-                Create Your First Product
-              </Button>
-            </div>
-          </div>
+    <h2 className="text-lg font-semibold">
+      No Products Available
+    </h2>
+
+    <p className="text-gray-500">
+      You haven’t added any products yet. Start by creating your first product.
+    </p>
+
+    <div className="flex justify-center gap-3">
+      <Button onClick={() => setOpenCreateModal(true)}>
+        Create Your First Product
+      </Button>
+
+      <Button
+        variant="outline"
+        onClick={() => navigate("/vendor/dashboard")}
+      >
+        Go to Dashboard
+      </Button>
+    </div>
+  </div>
+
+
+
+          
         ) : (
           <>
             {/* ================= PRODUCTS ================= */}

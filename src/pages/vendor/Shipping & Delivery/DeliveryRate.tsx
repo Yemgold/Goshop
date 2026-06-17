@@ -11,7 +11,7 @@ import { createBusinessShippingRate } from "../../../services/vendor/vendor.api.
 
 import { useBusinessShippingRates } from "../../../hooks/shipping/useBusinessShippingRates";
 
-import type { BusinessShippingRate } from "../../../types/vendor/delivery.types";
+import type { BusinessShippingRate } from "../../../types";
 
 export default function DeliveryRate() {
   const businessId = useAuthStore((state) => state.user?.businessId);

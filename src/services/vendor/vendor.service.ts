@@ -9,7 +9,8 @@ import type {
   Product,
   AnalyticsData,
   VendorDiscountsData,
-  VendorOrdersData,
+  VendorOrder,
+  VendorOrdersResponse,
   VendorSalesData,
   VendorInventoryData,
   VendorCategoriesData,
@@ -166,15 +167,21 @@ export const toggleDiscountStatus = async (
 };
 
 /* ================= ORDERS ================= */
+export const getVendorOrders = async (
+  vendorId: string,
+  page = 1,
+  limit = 10,
+  searchParams = ""
+): Promise<VendorOrder[]> => {
+  const { data } = await apiClient.get<VendorOrdersResponse>(
+    `/orders/vendor/${vendorId}`,
+    {
+      params: { page, limit, searchParams },
+    }
+  );
 
-export const getVendorOrders =
-  async (): Promise<VendorOrdersData> => {
-    const orders = await api.getVendorOrdersAPI();
-
-    return {
-      orders,
-    };
-  };
+  return data.data;
+};
 
 export const updateOrderStatus = async (
   id: string,

@@ -2,14 +2,10 @@
 
 import apiClient from "../core/api.client";
 
-import type {
-  Cart,
-  Product,
-  DashboardData,
-  TrackingOrder,
-} from "../../types/buyer.types";
+import type { Cart, DashboardData, TrackingOrder } from "../../types";
 
 import type { CreateOrderPayload } from "../../types/paymentintent.type";
+
 
 /* ================= DASHBOARD ================= */
 export const getBuyerDashboardAPI = async (): Promise<DashboardData> => {
@@ -18,17 +14,12 @@ export const getBuyerDashboardAPI = async (): Promise<DashboardData> => {
 };
 
 /* ================= PRODUCTS ================= */
-export const getBuyerProductsAPI = async (): Promise<Product[]> => {
-  const res = await apiClient.get("/buyers/products");
-  return res.data.data;
-};
 
-export const getBuyerProductByIdAPI = async (
-  productId: string
-): Promise<Product> => {
-  const res = await apiClient.get(`/buyers/products/${productId}`);
-  return res.data.data;
-};
+
+
+
+
+
 
 /* ================= ORDERS ================= */
 export const getBuyerOrdersAPI = async (buyerId: string) => {
@@ -77,14 +68,30 @@ export const getCartAPI = async (): Promise<Cart> => {
 
 export const getOrCreateCartAPI = async () => {
   const res = await apiClient.get("/carts/get-or-create-cart");
+
+  console.log(
+    "GET CART RESPONSE:",
+    JSON.stringify(res.data, null, 2)
+  );
+
+
   return res.data.data;
 };
 
-export const addToCartAPI = async (
-  productId: string,
-  businessId: string,
-  quantity: number
-) => {
+
+
+
+
+
+export const addToCartAPI = async ({
+  productId,
+  businessId,
+  quantity,
+}: {
+  productId: string;
+  businessId: string;
+  quantity: number;
+}) => {
   const res = await apiClient.post("/carts/add-item-to-cart", {
     productId,
     businessId,
@@ -94,10 +101,14 @@ export const addToCartAPI = async (
   return res.data.data;
 };
 
-export const updateCartItemAPI = async (
-  productId: string,
-  quantity: number
-) => {
+
+export const updateCartItemAPI = async ({
+  productId,
+  quantity,
+}: {
+  productId: string;
+  quantity: number;
+}) => {
   const res = await apiClient.patch(
     `/carts/update-item-quantity/${productId}`,
     { quantity }
@@ -138,6 +149,8 @@ export const getBusStopsByStateAPI = async (state: string) => {
 export const verifyPaymentAPI = (reference: string) => {
   return apiClient.get(`/payments/verify/${reference}`);
 };
+
+
 
 
 

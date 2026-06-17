@@ -102,7 +102,7 @@ export default function Dashboard() {
 
       {/* ================= STATS ================= */}
       <DashboardGrid>
-        <StatCard title="Revenue" value={`₦${data.revenue}`} />
+       <StatCard title="Revenue" value={`₦${data?.revenue ?? 0}`} />
         <StatCard title="Orders" value={data.orders} />
         <StatCard title="Products" value={data.products} />
       </DashboardGrid>

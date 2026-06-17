@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getBusinessShippingRates } from "../../services/vendor/vendor.api.service"; 
-import type { BusinessShippingRate } from "../../types/vendor/delivery.types";
+import type { BusinessShippingRate } from "../../types";
 
 export const useBusinessShippingRates = (
   businessId: string

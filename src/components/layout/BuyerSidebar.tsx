@@ -30,7 +30,7 @@ export function BuyerSidebar({
   roles,
 }: Props) {
   // ================= CHECK IF USER CAN STILL UPGRADE =================
-  const canUpgrade = roles.length < 3;
+  const canUpgrade = roles.length < 4;
 
   return (
     <ProSidebar
@@ -127,6 +127,8 @@ export function BuyerSidebar({
       footer={
         canUpgrade ? (
           <div className="p-2 border-t">
+
+
             <button
               onClick={onAddPartner}
               className="
@@ -148,9 +150,191 @@ export function BuyerSidebar({
               <Plus size={16} />
               Become Partner
             </button>
+
+
           </div>
         ) : null
       }
     />
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import { ProSidebar } from "./ProSidebar";
+
+// import {
+//   LayoutDashboard,
+//   ShoppingCart,
+//   ShoppingBag,
+//   Plus,
+//   Heart,
+//   PackageCheck,
+//   Search,
+//   Star,
+//   User,
+//   Settings,
+// } from "lucide-react";
+
+// import type { PartnerRole } from "../../types/roles";
+
+// /* ================= PROPS ================= */
+
+// type Props = {
+//   onAddPartner: () => void;
+//   onOpenBusinessProfile?: () => void;
+//   hasBusinessProfile?: boolean;
+//   roles: PartnerRole[];
+// };
+
+// export function BuyerSidebar({
+//   onAddPartner,
+//   onOpenBusinessProfile,
+//   hasBusinessProfile = false,
+//   roles,
+// }: Props) {
+//   // ================= CHECK IF USER CAN STILL UPGRADE =================
+//   const canUpgrade = roles.length < 3;
+
+//   // ================= ACTION =================
+//   const handleBecomePartner = () => {
+//     if (hasBusinessProfile) {
+//       onAddPartner?.(); // upgrade flow
+//     } else {
+//       onOpenBusinessProfile?.(); // force create business first
+//     }
+//   };
+
+//   return (
+//     <ProSidebar
+//       title="User Hub"
+//       menu={[
+//         // ================= SHOPPING =================
+//         {
+//           label: "Shopping",
+//           icon: <ShoppingBag size={18} />,
+//           children: [
+//             {
+//               label: "Home",
+//               path: "/buyers/home",
+//               icon: <LayoutDashboard size={18} />,
+//             },
+//             {
+//               label: "Browse Products",
+//               path: "/buyers/products",
+//               icon: <Search size={18} />,
+//             },
+//             {
+//               label: "Categories",
+//               path: "/buyers/categories",
+//               icon: <ShoppingBag size={18} />,
+//             },
+//             {
+//               label: "Deals & Discounts",
+//               path: "/buyers/deals",
+//               icon: <Star size={18} />,
+//             },
+//           ],
+//         },
+
+//         // ================= ORDERS =================
+//         {
+//           label: "Orders",
+//           icon: <PackageCheck size={18} />,
+//           children: [
+//             {
+//               label: "My Orders",
+//               path: "/buyers/orders",
+//               icon: <PackageCheck size={18} />,
+//             },
+//             {
+//               label: "Order Tracking",
+//               path: "/buyers/orders/tracking",
+//               icon: <Search size={18} />,
+//             },
+//             {
+//               label: "Returns & Refunds",
+//               path: "/buyers/returns",
+//               icon: <PackageCheck size={18} />,
+//             },
+//           ],
+//         },
+
+//         // ================= CART =================
+//         {
+//           label: "Cart & Wishlist",
+//           icon: <ShoppingCart size={18} />,
+//           children: [
+//             {
+//               label: "My Cart",
+//               path: "/buyers/cart",
+//               icon: <ShoppingCart size={18} />,
+//             },
+//             {
+//               label: "Wishlist",
+//               path: "/buyers/wishlist",
+//               icon: <Heart size={18} />,
+//             },
+//           ],
+//         },
+
+//         // ================= ACCOUNT =================
+//         {
+//           label: "Account",
+//           icon: <User size={18} />,
+//           children: [
+//             {
+//               label: "Profile",
+//               path: "/buyers/profile",
+//               icon: <User size={18} />,
+//             },
+//             {
+//               label: "Settings",
+//               path: "/buyers/settings",
+//               icon: <Settings size={18} />,
+//             },
+//           ],
+//         },
+//       ]}
+
+//       footer={
+//         canUpgrade ? (
+//           <div className="p-2 border-t">
+//             <button
+//               onClick={handleBecomePartner}
+//               className="
+//                 w-full
+//                 flex
+//                 items-center
+//                 justify-center
+//                 gap-2
+//                 px-3
+//                 py-2
+//                 rounded-lg
+//                 bg-black
+//                 text-white
+//                 text-sm
+//                 hover:opacity-90
+//                 transition
+//               "
+//             >
+//               <Plus size={16} />
+//               Become Partner
+//             </button>
+//           </div>
+//         ) : null
+//       }
+//     />
+//   );
+// }

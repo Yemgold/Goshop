@@ -22,7 +22,7 @@ export const authService = {
   },
 
   resendVerification: (email: string) => {
-    return apiClient.post("/auth/resend-verification", { email });
+    return apiClient.post("/auth/resend-email-verification", { email });
   },
 
   forgotPassword: (data: { email: string }) => {

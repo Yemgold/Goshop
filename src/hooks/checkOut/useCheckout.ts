@@ -1,281 +1,6 @@
 
 
 
-// import { useMutation, useQueryClient } from "@tanstack/react-query";
-// import { toast } from "react-toastify";
-// import { useNavigate } from "react-router-dom";
-
-// import { checkoutService } from "../../services/checkout.service";
-// import { useCart } from "../cart/useCart";
-// import { useAuthStore } from "../../store/auth.store";
-
-
-// /* ================= HOOK ================= */
-
-// export function useCheckout() {
-
-//   const navigate = useNavigate();
-//   const queryClient = useQueryClient();
-
-//   const user = useAuthStore((s) => s.user);
-
-
-//   const { clearCart } = useCart();
-
-//   const mutation = useMutation({
-//     mutationFn: async (payload: any) => {
-//       const result =
-//         await checkoutService.placeOrder(payload);
-
-//       return result;
-//     },
-
-//     onSuccess: async (res) => {
-
-//       await clearCart.mutateAsync();
-
-//       await queryClient.invalidateQueries({
-//         queryKey: ["buyer-orders"],
-//       });
-
-//       toast.success(
-//         "Order placed successfully 🚀"
-//       );
-
-//       navigate("/buyers/order-success", {
-//         state: {
-//           orderId: res.data.order._id,
-//           paymentUrl:
-//             res.data.paymentIntent.paymentUrl,
-//         },
-//       });
-//     },
-
-//     onError: (error: any) => {
-//       toast.error(
-//         error.response?.data?.message ||
-//           "Checkout failed"
-//       );
-//     },
-//   });
-
-//   /* ================= PLACE ORDER ================= */
-
-//   const placeOrder = async (payload: {
-//     cart: any;
-//     cartData: any;
-//     shippingTotal: number;
-//     form: any;
-//     vendorsWithShipping: any[];
-//     contactPhone: string;
-//   }) => {
-
-//     const customerId = user?.id;
-
-
-//     if (!customerId) {
-
-//       toast.error(
-//         "Session expired. Please login again."
-//       );
-
-//       navigate("/login");
-
-//       return;
-//     }
-
-//     if (!payload.cart?.vendors?.length) {
-
-//       toast.error("Cart is empty");
-//       return;
-//     }
-
-//     if (!payload.form?.deliveryMode) {
-  
-
-//       toast.error(
-//         "Select delivery mode"
-//       );
-
-//       return;
-//     }
-
-//     if (!payload.contactPhone?.trim()) {
-  
-//       toast.error(
-//         "Phone number required"
-//       );
-
-//       return;
-//     }
-
-//     if (
-//       payload.form.deliveryMode ===
-//         "homeDelivery" &&
-//       !payload.form.selectedState
-//     ) {
-//       toast.error("Select state");
-//       return;
-//     }
-
-//     if (
-//       payload.form.deliveryMode ===
-//         "homeDelivery" &&
-//       !payload.form.selectedTown
-//     ) {
-
-//       toast.error("Select town");
-//       return;
-//     }
-
-//     const vendorOrders =
-//       payload.vendorsWithShipping.map(
-//         (vendor: any) => ({
-//           businessId: vendor.businessId,
-
-//           items: (
-//             vendor.items || []
-//           ).map((item: any) => ({
-//             productId: item.productId,
-//             name: item.name || "",
-//             quantity: item.quantity,
-//             price: item.price || 0,
-//             weight: item.weight || 0,
-//           })),
-
-//           subtotal: vendor.subtotal,
-//           totalWeight:
-//             vendor.totalWeight,
-//           shippingFee:
-//             vendor.shippingFee,
-//           status: "pending",
-//         })
-//       );
-
-//     const items =
-//       payload.cart?.vendors?.flatMap?.(
-//         (v: any) =>
-//           v.items.map(
-//             (item: any) => ({
-//               businessId:
-//                 v.businessId,
-//               productId:
-//                 item.productId,
-//               quantity:
-//                 item.quantity,
-//               price: item.price,
-//             })
-//           )
-//       ) || [];
-
-//     const cartId =
-//       payload.cartData?._id;
-
-//     if (!cartId) {
-      
-//       toast.error(
-//         "Cart ID missing"
-//       );
-
-//       return;
-//     }
-
-//     const finalPayload = {
-//   cartId,
-//   customerId,
-//   items,
-
-//   contactPhone: payload.contactPhone,
-
-//   idempotencyKey: crypto.randomUUID(),
-
-//   deliveryMode: payload.form.deliveryMode,
-
-//   pickupCenter:
-//     payload.form.deliveryMode === "pickUpFromOurNearestOffice"
-//       ? String(payload.form.pickupCenterId || "")
-//       : "",
-
-//   vendorOrders,
-
-//   subTotalSummation:
-//     vendorOrders.reduce(
-//       (sum: number, vendor: any) =>
-//         sum + vendor.subtotal,
-//       0
-//     ),
-
-//   shippingFeeSummation:
-//     payload.shippingTotal || 0,
-
-//   buyerState:
-//     payload.form.selectedState || "",
-
-//   /* HOME DELIVERY ONLY */
-
-//   deliveryAddress:
-//   payload.form.deliveryMode === "homeDelivery"
-//     ? {
-//         street: payload.form.address || "",
-//         town: payload.form.selectedTown || "",
-//         state: payload.form.selectedState || "",
-//         country: "Nigeria",
-//       }
-//     : null,
-
-//   nearestBusStop:
-//     payload.form.deliveryMode === "homeDelivery"
-//       ? String(payload.form.nearestBusStop || "")
-//       : "",
-
-//   deliveryFee:
-//     payload.form.deliveryMode === "homeDelivery"
-//       ? payload.shippingTotal
-//       : 0,
-// };
-
-
-// if (payload.form.deliveryMode === "homeDelivery") {
-//   if (
-//     !payload.form.address ||
-//     !payload.form.selectedTown ||
-//     !payload.form.selectedState
-//   ) {
-//     toast.error("Complete delivery address details");
-//     return;
-//   }
-// }
-
-//     const result =
-//       await mutation.mutateAsync(
-//         finalPayload
-//       );
-
-//     return result;
-//   };
-
-//   return {
-//     placeOrder,
-//     isPending: mutation.isPending,
-//   };
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -284,101 +9,35 @@ import { checkoutService } from "../../services/checkout.service";
 import { useCart } from "../cart/useCart";
 import { useAuthStore } from "../../store/auth.store";
 
-
-/* ================= HOOK ================= */
-
 export function useCheckout() {
-  console.log("🚀 useCheckout HOOK LOADED");
-
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
   const user = useAuthStore((s) => s.user);
-
-  console.log("👤 USER:", user);
-
   const { clearCart } = useCart();
 
   const mutation = useMutation({
     mutationFn: async (payload: any) => {
-      console.log("🔥 MUTATION FN STARTED");
-
-      console.log(
-        "🔥 MUTATION PAYLOAD:",
-        JSON.stringify(payload, null, 2)
-      );
-
-      const result =
-        await checkoutService.placeOrder(payload);
-
-      console.log(
-        "🔥 SERVICE RESPONSE:",
-        result
-      );
-
-      return result;
+      return await checkoutService.placeOrder(payload);
     },
 
     onSuccess: async (res) => {
-      console.log(
-        "✅ MUTATION SUCCESS:",
-        res
-      );
-
       await clearCart.mutateAsync();
 
       await queryClient.invalidateQueries({
         queryKey: ["buyer-orders"],
       });
 
-      toast.success(
-        "Order placed successfully 🚀"
-      );
+      toast.success("Order placed successfully 🚀");
 
-      const paymentUrl =
-  res.data.paymentIntent?.paymentUrl;
+      const paymentUrl = res.data?.paymentIntent?.paymentUrl;
 
-if (!paymentUrl) {
-  toast.error("Unable to initialize payment");
-  return;
-}
-
-window.location.href = paymentUrl;
-
-
+      if (paymentUrl) {
+        window.location.href = paymentUrl;
+      }
     },
 
     onError: (error: any) => {
-      console.log("❌ MUTATION ERROR");
-
-      console.log(
-        "ERROR OBJECT:",
-        error
-      );
-
-      console.log(
-        "RESPONSE DATA:",
-        JSON.stringify(
-          error.response?.data,
-          null,
-          2
-        )
-      );
-
-      console.log(
-        "STATUS:",
-        error.response?.status
-      );
-
-      console.log(
-        "MESSAGE:",
-        error.response?.data?.message
-      );
-
-      toast.error(
-        error.response?.data?.message ||
-          "Checkout failed"
-      );
+      toast.error(error.response?.data?.message || "Checkout failed");
     },
   });
 
@@ -387,311 +46,121 @@ window.location.href = paymentUrl;
   const placeOrder = async (payload: {
     cart: any;
     cartData: any;
-    shippingTotal: number;
     form: any;
+    products: any[];
     vendorsWithShipping: any[];
     contactPhone: string;
+
+    // MUST come from shipping.engine.ts AFTER bus stop API call
+    shippingSummary: {
+      shippingFeeSummation: number;
+      deliveryFeeSummation: number;
+    };
   }) => {
-    console.log(
-      "🚨 PLACE ORDER CALLED"
-    );
-
-    console.log(
-      "STEP 1 - USER CHECK"
-    );
-
-
-
- console.log("USER INSIDE placeOrder:", user);
-
-console.log("USER FROM STORE:",
-  useAuthStore.getState().user
-);
-
-const customerId =
-  useAuthStore.getState().user?.id;
-
-console.log(
-  "STEP 2 - customerId:",
-  customerId
-);
+    const customerId = user?.id;
 
     if (!customerId) {
-      console.log(
-        "❌ customerId missing"
-      );
-
-      toast.error(
-        "Session expired. Please login again."
-      );
-
+      toast.error("Session expired");
       navigate("/login");
-
       return;
     }
 
-    console.log("STEP 3");
+    if (!payload.shippingSummary) {
+      toast.error("Shipping not calculated");
+      return;
+    }
 
     if (!payload.cart?.vendors?.length) {
-      console.log(
-        "❌ Cart vendors missing"
-      );
-
       toast.error("Cart is empty");
       return;
     }
 
-    console.log("STEP 4");
-
-    if (!payload.form?.deliveryMode) {
-      console.log(
-        "❌ Delivery mode missing"
-      );
-
-      toast.error(
-        "Select delivery mode"
-      );
-
-      return;
-    }
-
-    console.log("STEP 5");
-
-    if (!payload.contactPhone?.trim()) {
-      console.log(
-        "❌ Phone missing"
-      );
-
-      toast.error(
-        "Phone number required"
-      );
-
-      return;
-    }
-
-    console.log("STEP 6");
-
-    if (
-      payload.form.deliveryMode ===
-        "homeDelivery" &&
-      !payload.form.selectedState
-    ) {
-      console.log(
-        "❌ State missing"
-      );
-
-      toast.error("Select state");
-      return;
-    }
-
-    console.log("STEP 7");
-
-    if (
-      payload.form.deliveryMode ===
-        "homeDelivery" &&
-      !payload.form.selectedTown
-    ) {
-      console.log(
-        "❌ Town missing"
-      );
-
-      toast.error("Select town");
-      return;
-    }
-
-    console.log(
-      "STEP 8 - BUILDING VENDOR ORDERS"
-    );
-
-    const vendorOrders =
-      payload.vendorsWithShipping.map(
-        (vendor: any) => ({
-          businessId: vendor.businessId,
-
-          items: (
-            vendor.items || []
-          ).map((item: any) => ({
-            productId: item.productId,
-            name: item.name || "",
-            quantity: item.quantity,
-            price: item.price || 0,
-            weight: item.weight || 0,
-          })),
-
-          subtotal: vendor.subtotal,
-          totalWeight:
-            vendor.totalWeight,
-          shippingFee:
-            vendor.shippingFee,
-          status: "pending",
-        })
-      );
-
-    console.log(
-      "STEP 9 - VENDOR ORDERS:",
-      vendorOrders
-    );
+    /* ================= BUILD ITEMS ================= */
 
     const items =
-      payload.cart?.vendors?.flatMap?.(
-        (v: any) =>
-          v.items.map(
-            (item: any) => ({
-              businessId:
-                v.businessId,
-              productId:
-                item.productId,
-              quantity:
-                item.quantity,
-              price: item.price,
-            })
-          )
-      ) || [];
-
-    console.log(
-      "STEP 10 - ITEMS:",
-      items
-    );
-
-    const cartId =
-      payload.cartData?._id;
-
-    console.log(
-      "STEP 11 - cartId:",
-      cartId
-    );
-
-    if (!cartId) {
-      console.log(
-        "❌ cartId missing"
+      payload.cart.vendors.flatMap((v: any) =>
+        v.items.map((item: any) => ({
+          businessId: v.businessId,
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+        }))
       );
 
-      toast.error(
-        "Cart ID missing"
-      );
+    /* ================= VENDOR ORDERS ================= */
 
-      return;
-    }
+const vendorOrders = payload.vendorsWithShipping.map((v: any) => ({
+  businessId: v.businessId,
 
+  items: v.items.map((item: any) => {
+    const product = payload.products.find(
+      (p: any) => (p._id || p.id) === item.productId
+    );
 
+    return {
+      productId: item.productId,
+      name: String(product?.name || "Product"),
+      quantity: Number(item.quantity || 0),
+      price: Number(item.price || 0),
+      weight: Number(product?.weight || 0),
+    };
+  }),
 
-
+  subtotal: v.subtotal,
+  totalWeight: v.totalWeight,
+  shippingFee: v.shippingFee,
+  status: "pending",
+}));
 
     const finalPayload = {
-  cartId,
-  customerId,
-  items,
+      cartId: payload.cartData._id,
+      customerId,
+      items,
+      contactPhone: payload.contactPhone,
 
-  contactPhone: payload.contactPhone,
+      idempotencyKey: crypto.randomUUID(),
+      deliveryMode: payload.form.deliveryMode,
 
-  idempotencyKey: crypto.randomUUID(),
+      pickupCenter:
+        payload.form.deliveryMode === "pickUpFromOurNearestOffice"
+          ? payload.form.pickupCenterId || ""
+          : "",
 
-  deliveryMode: payload.form.deliveryMode,
+      vendorOrders,
 
-  pickupCenter:
-    payload.form.deliveryMode === "pickUpFromOurNearestOffice"
-      ? String(payload.form.pickupCenterId || "")
-      : "",
+      subTotalSummation: vendorOrders.reduce(
+        (s: number, v: any) => s + v.subtotal,
+        0
+      ),
 
-  vendorOrders,
+      /* ================= IMPORTANT FIX ================= */
 
-  subTotalSummation:
-    vendorOrders.reduce(
-      (sum: number, vendor: any) =>
-        sum + vendor.subtotal,
-      0
-    ),
+      // vendor → office
+      shippingFeeSummation:
+        payload.shippingSummary.shippingFeeSummation,
 
-  shippingFeeSummation:
-    payload.shippingTotal || 0,
+      // office → customer (THIS is your missing backend requirement)
+      deliveryFee: payload.shippingSummary.deliveryFeeSummation,
 
-  buyerState:
-    payload.form.selectedState || "",
+      buyerState: payload.form.selectedState || "",
 
-  /* HOME DELIVERY ONLY */
+      deliveryAddress:
+        payload.form.deliveryMode === "homeDelivery"
+          ? {
+              street: payload.form.address,
+              town: payload.form.selectedTown,
+              state: payload.form.selectedState,
+              country: "Nigeria",
+            }
+          : null,
 
-  deliveryAddress:
-  payload.form.deliveryMode === "homeDelivery"
-    ? {
-        street: payload.form.address || "",
-        town: payload.form.selectedTown || "",
-        state: payload.form.selectedState || "",
-        country: "Nigeria",
-      }
-    : null,
+      nearestBusStop:
+        payload.form.deliveryMode === "homeDelivery"
+          ? payload.form.nearestBusStop
+          : "",
+    };
 
-  nearestBusStop:
-    payload.form.deliveryMode === "homeDelivery"
-      ? String(payload.form.nearestBusStop || "")
-      : "",
-
-  deliveryFee:
-    payload.form.deliveryMode === "homeDelivery"
-      ? payload.shippingTotal
-      : 0,
-};
-
-
-if (payload.form.deliveryMode === "homeDelivery") {
-  if (
-    !payload.form.address ||
-    !payload.form.selectedTown ||
-    !payload.form.selectedState
-  ) {
-    toast.error("Complete delivery address details");
-    return;
-  }
-}
-
-
-
-
-    console.log(
-      "STEP 12 - FINAL PAYLOAD"
-    );
-
-    console.log(
-      JSON.stringify(
-        finalPayload,
-        null,
-        2
-      )
-    );
-
-    console.log(
-      "STEP 13 - ABOUT TO CALL MUTATION"
-    );
-
-    const result =
-      await mutation.mutateAsync(
-        finalPayload
-      );
-
-
-
-console.log(
-  "HOME DELIVERY VALUES",
-  {
-    deliveryMode: payload.form.deliveryMode,
-    address: payload.form.address,
-    nearestBusStop: payload.form.nearestBusStop,
-    selectedTown: payload.form.selectedTown,
-    selectedState: payload.form.selectedState,
-  }
-);
-
-
-
-
-
-
-    console.log(
-      "🔥 MUTATION FINISHED:"
-    );
-
-    console.log(result);
-
-    return result;
+    return await mutation.mutateAsync(finalPayload);
   };
 
   return {
@@ -701,3 +170,187 @@ console.log(
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import { useMutation, useQueryClient } from "@tanstack/react-query";
+// import { toast } from "react-toastify";
+// import { useNavigate } from "react-router-dom";
+
+// import { checkoutService } from "../../services/checkout.service";
+// import { useCart } from "../cart/useCart";
+// import { useAuthStore } from "../../store/auth.store";
+
+// export function useCheckout() {
+//   const navigate = useNavigate();
+//   const queryClient = useQueryClient();
+//   const user = useAuthStore((s) => s.user);
+//   const { clearCart } = useCart();
+
+//   const mutation = useMutation({
+//     mutationFn: checkoutService.placeOrder,
+
+//     onSuccess: async (res) => {
+//       await clearCart.mutateAsync();
+
+//       await queryClient.invalidateQueries({
+//         queryKey: ["buyer-orders"],
+//       });
+
+//       toast.success("Order placed successfully 🚀");
+
+//       const paymentUrl = res?.data?.paymentIntent?.paymentUrl;
+
+//       if (paymentUrl) {
+//         window.location.href = paymentUrl;
+//       }
+//     },
+
+//     onError: (error: any) => {
+//       console.error("CHECKOUT ERROR:", error?.response?.data || error);
+//       toast.error(
+//         error?.response?.data?.message || "Checkout failed"
+//       );
+//     },
+//   });
+
+//   const placeOrder = async (payload: {
+//     cart: any;
+//     cartData: any;
+//     form: any;
+//     products: any[];
+//     vendorsWithShipping: any[];
+//     contactPhone: string;
+//     shippingSummary: {
+//       shippingFeeSummation: number;
+//       deliveryFeeSummation: number;
+//     };
+//   }) => {
+//     const customerId = user?.id 
+
+//     //  const customerId = user?.id || user?._id;
+
+//     if (!customerId) {
+//       toast.error("Session expired");
+//       navigate("/login");
+//       return;
+//     }
+
+//     if (!payload.shippingSummary) {
+//       toast.error("Shipping not calculated");
+//       return;
+//     }
+
+//     if (!payload.cart?.vendors?.length) {
+//       toast.error("Cart is empty");
+//       return;
+//     }
+
+//     /* ================= BUILD VENDOR ORDERS (SOURCE OF TRUTH) ================= */
+//     const vendorOrders = (payload.vendorsWithShipping || [])
+//       .filter((v: any) => v?.businessId)
+//       .map((v: any) => ({
+//         businessId: String(v.businessId),
+
+//         items: (v.items || [])
+//           .map((item: any) => {
+//             const product = payload.products.find(
+//               (p: any) => (p._id || p.id) === item.productId
+//             );
+
+
+//               console.log("STOCK CHECK:", {
+//       productId: item.productId,
+//       name: product?.name,
+//       headon: product?.headon,
+//       quantity: item.quantity,
+//     });
+
+//             return {
+//               productId: item.productId,
+//               name: product?.name || "Product",
+//               quantity: Number(item.quantity || 0),
+//               price: Number(item.price || 0),
+//               weight: Number(product?.weight || 0),
+//             };
+//           })
+//           .filter((i: any) => i.productId),
+
+//         subtotal: Number(v.subtotal || 0),
+//         totalWeight: Number(v.totalWeight || 0),
+//         shippingFee: Number(v.shippingFee || 0),
+//         status: "pending",
+//       }));
+
+//     if (!vendorOrders.length) {
+//       toast.error("No valid vendor orders found");
+//       return;
+//     }
+
+//     /* ================= GRAND TOTAL ================= */
+//     const grandTotal =
+//       vendorOrders.reduce((sum, v) => sum + v.subtotal, 0) +
+//       (payload.shippingSummary.shippingFeeSummation || 0) +
+//       (payload.shippingSummary.deliveryFeeSummation || 0);
+
+//     /* ================= FINAL PAYLOAD ================= */
+//     const finalPayload = {
+//       customerId: String(customerId),
+
+//       cartId: payload.cartData?._id,
+
+//       contactPhone: payload.contactPhone,
+
+//       idempotencyKey: crypto.randomUUID(),
+
+//       deliveryMode: payload.form.deliveryMode,
+
+//       /* ================= ADDRESS ================= */
+//       address: payload.form.address || "",
+//       city: payload.form.selectedTown || "",
+//       state: payload.form.selectedState || "",
+//       country: "Nigeria",
+
+//       /* ================= REQUIRED BY BACKEND ================= */
+//       vendorOrders,
+
+//       grandTotal,
+
+//       shippingFeeSummation:
+//         payload.shippingSummary.shippingFeeSummation || 0,
+
+//       deliveryFee:
+//         payload.shippingSummary.deliveryFeeSummation || 0,
+
+//       /* ================= PICKUP ================= */
+//       pickupCenter:
+//         payload.form.deliveryMode === "pickUpFromOurNearestOffice"
+//           ? payload.form.pickupCenterId || ""
+//           : "",
+
+//       nearestBusStop:
+//         payload.form.deliveryMode === "homeDelivery"
+//           ? payload.form.nearestBusStop || ""
+//           : "",
+//     };
+
+//     console.log("🚀 FINAL CHECKOUT PAYLOAD:", finalPayload);
+
+//     return await mutation.mutateAsync(finalPayload as any);
+//   };
+
+//   return {
+//     placeOrder,
+//     isPending: mutation.isPending,
+//   };
+// }

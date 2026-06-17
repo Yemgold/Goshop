@@ -1,11 +1,15 @@
 
-// hooks/vendor/useVendorOrders.ts
 import { useQuery } from "@tanstack/react-query";
-import { getVendorOrders } from "../../services/vendor/vendor.service";
+import { getVendorOrdersToFulfil } from "../../services/vendor/orders.service";
+import { useAuthStore } from "../../store/auth.store";
 
 export const useVendorOrders = () => {
+  const user = useAuthStore((state) => state.user);
+  const businessId = user?.businessId;
+
   return useQuery({
-    queryKey: ["vendor-orders"],
-    queryFn: getVendorOrders,
+    queryKey: ["vendor-orders", businessId],
+    queryFn: () => getVendorOrdersToFulfil(businessId!),
+    enabled: !!businessId,
   });
 };

@@ -35,25 +35,29 @@ export function useMultiCartSummary(items: any[], products: any[]) {
 
 
 
-
-
-
-
 // import { useMemo } from "react";
 // import { groupCartByVendor } from "../../mappers/group.cart.mapper";
 
-// export function useMultiCartSummary(items: any[]) {
+// export function useMultiCartSummary(items: any[], products: any[]) {
+//   const safeItems = Array.isArray(items) ? items : [];
+//   const safeProducts = Array.isArray(products) ? products : [];
+
 //   const vendors = useMemo(() => {
-//     return groupCartByVendor(items);
-//   }, [items]);
+//     // ❌ REMOVE THIS BLOCK
+//     // if (safeItems.length === 0 || safeProducts.length === 0) return [];
 
-//   const total = useMemo(() => {
-//     return vendors.reduce((sum: number, v: any) => sum + v.subtotal, 0);
-//   }, [vendors]);
+//     return groupCartByVendor(safeItems, safeProducts);
+//   }, [safeItems, safeProducts]);
 
-//   const totalWeight = useMemo(() => {
-//     return vendors.reduce((sum: number, v: any) => sum + v.totalWeight, 0);
-//   }, [vendors]);
+//   const total = vendors.reduce(
+//     (sum, v) => sum + (v.subtotal || 0),
+//     0
+//   );
+
+//   const totalWeight = vendors.reduce(
+//     (sum, v) => sum + (v.totalWeight || 0),
+//     0
+//   );
 
 //   return { vendors, total, totalWeight };
 // }

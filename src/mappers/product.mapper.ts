@@ -1,28 +1,44 @@
 
 
 
-import type { Product } from "../types/buyer.types";
+import type { Product } from "../types"; 
 
-export const toProduct = (data: any): Product => {
+export const normalizeProduct = (data: any): Product => {
+  if (!data) {
+    console.warn("normalizeProduct received empty data");
+    return {} as Product;
+  }
+
+  const id = String(data?._id || data?.id || "");
+
   return {
-    _id: data._id,
+    ...data, // 👈 IMPORTANT: preserve everything
 
-    name: data.name,
+    _id: id,
 
-    title: data.name,
+    id, // 👈 ADD THIS (CRITICAL FIX for matching)
 
-    description: data.description ?? "",
+    name: data?.name || data?.title || "Unnamed Product",
+    title: data?.title || data?.name || "Unnamed Product",
 
-    price: Number(data.price ?? 0),
+    description: data?.description ?? "",
+    price: Number(data?.price ?? 0),
+    category: data?.category ?? "",
+    inStock: Boolean(data?.inStock),
+    stock: Number(data?.stock ?? 0),
 
-    category: data.category ?? "",
+    businessId:
+      typeof data?.businessId === "string"
+        ? data.businessId
+        : data?.businessId?._id ||
+          data?.business?._id ||
+          data?.business?.id ||
+          "",
 
-    inStock: Boolean(data.inStock),
-
-    stock: Number(data.stock ?? 0),
-
-    businessId: data.businessId,
-
-    media: data.media ?? [],
+    media: Array.isArray(data?.media)
+      ? data.media
+      : data?.image
+      ? [{ url: data.image }]
+      : [],
   };
 };

@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getBuyerDashboardAPI } from "../../api/user/buyer.api";
 import { buyerKeys } from "../../query/buyerKeys";
-import type { DashboardData } from "../../types/buyer.types";
+import type { DashboardData } from "../../types";
 
 export const useBuyerDashboard = () => {
   return useQuery<DashboardData>({

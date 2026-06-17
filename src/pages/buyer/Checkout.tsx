@@ -1,25 +1,14 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 import { useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 
 import { buyerService } from "../../services/buyer.api.service";
+import { productService } from "../../services/product.service";
 
 import { useCheckout } from "../../hooks/checkOut/useCheckout";
 import { useCheckoutForm } from "../../hooks/checkOut/useCheckoutForm";
-
 import { useMultiCartSummary } from "../../hooks/cart/useMultiCartSummary";
 import { calculateShipping } from "../../services/shipping.engine";
 
@@ -31,27 +20,17 @@ import { getBusStopsByStateAPI } from "../../api/user/buyer.api";
 import { states } from "../../data/states";
 import { townsByState } from "../../data/towns";
 
-import { toast } from "react-hot-toast";
-
-
-
 export default function Checkout() {
- 
+  const form = useCheckoutForm();
 
-const form = useCheckoutForm();
-const selectedState = form.selectedState;
+  const nextStep = () => form.next();
+  const prevStep = () => form.back();
 
- const nextStep = () => form.next();
- const prevStep = () => form.back();
+  /* ================= CART ================= */
 
-
-
-
-
-  /* ================= CART FROM API (REPLACED ZUSTAND) ================= */
   const { data: cartData } = useQuery({
     queryKey: ["cart"],
-    queryFn: buyerService.getCart, // or getOrCreateCartAPI wrapper
+    queryFn: buyerService.getCart,
   });
 
   const items = useMemo(() => {
@@ -59,93 +38,53 @@ const selectedState = form.selectedState;
   }, [cartData]);
 
   /* ================= PRODUCTS ================= */
+
   const { data: productsRaw } = useQuery({
-    queryKey: ["products"],
-    queryFn: buyerService.getProducts,
-  });
- 
+  queryKey: ["products"],
+  queryFn: () => productService.getProducts(),
+});
 
   const products = useMemo(() => {
     if (!productsRaw) return [];
-
     if (Array.isArray(productsRaw)) return productsRaw;
-
-    if (Array.isArray((productsRaw as any)?.data)) {
-      return (productsRaw as any).data;
-    }
-
-    if (Array.isArray((productsRaw as any)?.products)) {
-      return (productsRaw as any).products;
-    }
-
+    if (Array.isArray((productsRaw as any)?.data)) return (productsRaw as any).data;
+    if (Array.isArray((productsRaw as any)?.products)) return (productsRaw as any).products;
     return [];
   }, [productsRaw]);
 
- /* ================= BUS STOPS ================= */
+  /* ================= BUS STOPS (HOME DELIVERY FEES) ================= */
 
-const { data } = useQuery({
-  queryKey: ["busStops", form.selectedState],
-  queryFn: () => getBusStopsByStateAPI(form.selectedState),
-  enabled:
-    !!form.selectedState &&
-    form.deliveryMode === "homeDelivery",
-});
+  const { data } = useQuery({
+    queryKey: ["busStops", form.selectedState],
+    queryFn: () => getBusStopsByStateAPI(form.selectedState),
+    enabled: !!form.selectedState && form.deliveryMode === "homeDelivery",
+  });
 
-
-const busStops = data?.data || [];
-
-const deliveryRates = busStops;
+  const busStops = data?.data || [];
+  const deliveryRates = busStops;
 
   /* ================= PICKUP CENTERS ================= */
 
-const { data: pickupResponse } = useQuery({
-  queryKey: ["pickup-centers"],
-  queryFn: getAllPickupCentersAPI,
-});
+  const { data: pickupResponse } = useQuery({
+    queryKey: ["pickup-centers"],
+    queryFn: getAllPickupCentersAPI,
+  });
 
-const allPickupCenters = Array.isArray(pickupResponse?.data)
-  ? pickupResponse.data
-  : [];
+  const allPickupCenters = Array.isArray(pickupResponse?.data)
+    ? pickupResponse.data
+    : [];
 
+  const pickupCenters = useMemo(() => {
+    if (!form.selectedState) return [];
 
-
-const pickupCenters = useMemo(() => {
-  if (!form.selectedState) return [];
-
-  const filtered = allPickupCenters.filter(
-    (center: any) =>
-      center.state?.toLowerCase() === form.selectedState.toLowerCase()
-  );
-
-  return filtered.length > 0 ? filtered : [];
-}, [allPickupCenters, form.selectedState]);
-
-
-
-
-  /* ================= DEBUG ================= */
-
-  useEffect(() => {
-  console.log("PRODUCTS FINAL:", products);
-  console.log("CHECKOUT ITEMS:", items);
- 
-  console.log("STATE SELECTED:", form.selectedState);
-  console.log("CENTERS:", allPickupCenters);
-}, [products, items,selectedState, allPickupCenters, pickupCenters, states]);
-
-onError: (error: any) => {
-  console.log(
-    "CHECKOUT ERROR:",
-    JSON.stringify(error.response?.data, null, 2)
-  );
-
-  console.log(
-    "VALIDATION ERRORS:",
-    error.response?.data?.message
-  );
-}
+    return allPickupCenters.filter(
+      (center: any) =>
+        center.state?.toLowerCase() === form.selectedState.toLowerCase()
+    );
+  }, [allPickupCenters, form.selectedState]);
 
   /* ================= CART SUMMARY ================= */
+
   const isReady = items.length > 0 && products.length > 0;
 
   const cart = useMultiCartSummary(
@@ -153,90 +92,77 @@ onError: (error: any) => {
     isReady ? products : []
   );
 
-/* ================= SHIPPING ================= */
+  /* ================= SHIPPING ENGINE ================= */
 
-const cartItems = useMemo(() => {
-  return (cart.vendors || []).flatMap((v: any) => v.items || []);
-}, [cart.vendors]);
+  const cartItems = useMemo(() => {
+    return (cart.vendors || []).flatMap((v: any) => v.items || []);
+  }, [cart.vendors]);
 
-const shipping = useMemo(() => {
-  if (!form.selectedState || !form.deliveryMode) {
-    return {
-      vendors: [],
-      totalShipping: 0,
-      totalWeight: 0,
-    };
-  }
+  const shipping = useMemo(() => {
+    if (!form.selectedState || !form.deliveryMode) {
+      return {
+        vendors: [],
+        shippingFeeSummation: 0,
+        deliveryFeeSummation: 0,
+        totalShipping: 0,
+        totalWeight: 0,
+      };
+    }
 
-  return calculateShipping(
-    cartItems,
-    products,
-    form.selectedState,
-    deliveryRates,
-    form.deliveryMode 
-  );
-}, [cartItems, products, form.selectedState, form.deliveryMode]);
+    return calculateShipping(
+      cartItems,
+      products,
+      form.selectedState,
+      deliveryRates,
+      form.deliveryMode
+    );
+  }, [cartItems, products, form.selectedState, form.deliveryMode, deliveryRates]);
 
-const vendorsWithShipping = shipping.vendors;
-const shippingTotal = shipping.totalShipping;
+  const vendorsWithShipping = shipping.vendors;
 
+  /* ================= DEBUG ================= */
 
+  useEffect(() => {
+    console.log("PRODUCTS FINAL:", products);
+    console.log("CHECKOUT ITEMS:", items);
+    console.log("STATE SELECTED:", form.selectedState);
+    console.log("CENTERS:", allPickupCenters);
+    console.log("FINAL SHIPPING:", shipping);
+  }, [products, items, form.selectedState, allPickupCenters, vendorsWithShipping]);
 
-/* ================= DEBUG LOGS ================= */
+  /* ================= PRICING ================= */
 
-useEffect(() => {
-  console.log("FINAL SHIPPING TOTAL:", shippingTotal);
+  const subtotal = cart.total || 0;
+  const grandTotal = subtotal + shipping.totalShipping;
 
-  console.log(busStops);
+  /* ================= CHECKOUT HOOK ================= */
 
-  console.log(
-    "BREAKDOWN:",
-    vendorsWithShipping.map(v => v.shippingFee)
-  );
-}, [shippingTotal,busStops, vendorsWithShipping]);
+  const { placeOrder, isPending } = useCheckout();
 
+  /* ================= PLACE ORDER ================= */
 
+  const handlePlaceOrder = async () => {
+    console.log("PLACE ORDER CLICKED");
 
+    if (!cart?.vendors?.length) {
+      toast.error("Cart not ready");
+      return;
+    }
 
-/* ================= PRICING ================= */
+    await placeOrder({
+      cart,
+      cartData,
+      form,
+      vendorsWithShipping,
+      contactPhone: form.phone,
+      products,
+      shippingSummary: {
+        shippingFeeSummation: shipping.shippingFeeSummation ?? 0,
+        deliveryFeeSummation: shipping.deliveryFeeSummation ?? 0,
+      },
+    });
+  };
 
-const subtotal = cart.total || 0;
-const grandTotal = subtotal + shippingTotal;
-
-/* ================= CHECKOUT ================= */
-
-const { placeOrder, isPending } = useCheckout();
-
-const handlePlaceOrder = async () => {
-   console.log("PLACE ORDER CLICKED");
-   console.log("ENTERED placeOrder");
-
-  console.log("cart:", cart);
-  console.log("cartData:", cartData);
-  console.log("form:", form);
-  console.log("vendorsWithShipping:", vendorsWithShipping);
-  console.log("shippingTotal:", shippingTotal);
-
- if (!cart?.vendors?.length) {
-    toast.error("Cart not ready");
-    return;
-  }
-
-
-  await placeOrder({
-    cart,
-
-    cartData,
-
-    shippingTotal,
-
-    form,
-
-    vendorsWithShipping,
-
-    contactPhone: form.phone,
-  });
-};
 
 
 return (
@@ -517,33 +443,55 @@ return (
       </div>
 
       {/* ================= RIGHT SUMMARY (DESKTOP ONLY) ================= */}
-      <div className="hidden lg:block lg:col-span-1">
-        <div className="bg-white rounded-2xl border p-6 sticky top-6">
+     
 
-          <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+         <div className="hidden lg:block lg:col-span-1">
+  <div className="bg-white rounded-2xl border p-6 sticky top-6">
 
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span>₦{subtotal.toLocaleString()}</span>
-            </div>
+    <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
-            <div className="flex justify-between">
-              <span>Shipping</span>
-              <span>₦{shippingTotal.toLocaleString()}</span>
-            </div>
+    <div className="space-y-3 text-sm">
 
-            <div className="border-t pt-3 flex justify-between font-bold text-lg">
-              <span>Total</span>
-              <span>₦{grandTotal.toLocaleString()}</span>
-            </div>
-          </div>
-
-          <p className="text-xs text-gray-400 mt-3">
-            Shipping confirmed before payment.
-          </p>
-        </div>
+      {/* SUBTOTAL */}
+      <div className="flex justify-between">
+        <span>Subtotal</span>
+        <span>₦{subtotal.toLocaleString()}</span>
       </div>
+
+      {/* PRODUCT SHIPPING (Vendor → Office) */}
+      <div className="flex justify-between">
+        <span>Shipping (Vendor Fee)</span>
+        <span>
+          ₦{(shipping.shippingFeeSummation || 0).toLocaleString()}
+        </span>
+      </div>
+
+      {/* DELIVERY FEE (Office → Customer) */}
+      <div className="flex justify-between">
+        <span>Delivery Fee</span>
+        <span>
+          ₦{(shipping.deliveryFeeSummation || 0).toLocaleString()}
+        </span>
+      </div>
+
+      {/* TOTAL */}
+      <div className="border-t pt-3 flex justify-between font-bold text-lg">
+        <span>Total</span>
+        <span>
+          ₦{(
+            subtotal +
+            (shipping.shippingFeeSummation || 0) +
+            (shipping.deliveryFeeSummation || 0)
+          ).toLocaleString()}
+        </span>
+      </div>
+    </div>
+
+    <p className="text-xs text-gray-400 mt-3">
+      Shipping confirmed before payment.
+    </p>
+  </div>
+</div>
 
     </div>
 
@@ -573,6 +521,5 @@ return (
   </div>
 );
 
-
-
 }
+

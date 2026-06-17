@@ -1,3 +1,7 @@
+
+
+
+
 import { Outlet, Navigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -12,6 +16,7 @@ import { BuyerSidebar } from "../../components/layout/BuyerSidebar";
 import { VendorSidebar } from "../../components/layout/VendorSidebar";
 import { PromoterSidebar } from "../../components/layout/PromoterSidebar";
 import { RiderSidebar } from "../../components/layout/RiderSidebar";
+import { PickUpSidebar } from "../../components/layout/PickUpSidebar";
 
 import UpgradeModal from "../../components/partner/UpgradeModal";
 
@@ -22,7 +27,8 @@ import { partnersService } from "../../services/partners.services";
 import type { PartnerRole } from "../../types/roles";
 
 import CartToastUI from "../ui/CartToast";
-// import MiniCartPreview from "../cart/MiniCartPreview";
+import BusinessProfileModal from "../partner/BusinessProfileModal";
+
 
 /* ================= TYPES ================= */
 
@@ -46,13 +52,15 @@ export default function AppLayout() {
 
   // ================= CART =================
 
- const { cartCount } = useCart();
+ const { cartCount } = useCart(); 
 
   // ================= STATE =================
   const [status, setStatus] = useState<PartnerStatus | null>(null);
   const [openUpgradeModal, setOpenUpgradeModal] = useState(false);
   const [openPhysicalModal, setOpenPhysicalModal] = useState(false);
   const [openDigitalModal, setOpenDigitalModal] = useState(false);
+  const [openBusinessProfileModal, setOpenBusinessProfileModal] =
+        useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ================= FETCH PARTNER STATUS =================
@@ -92,37 +100,66 @@ export default function AppLayout() {
       );
     }
 
-    if (currentRole === "vendor") {
-      return (
-        <VendorSidebar
-          roles={partnerRoles}
-          onAddPartner={() => setOpenUpgradeModal(true)}
-          onAddPhysical={() => setOpenPhysicalModal(true)}
-          onAddDigital={() => setOpenDigitalModal(true)}
-        />
-      );
-    }
 
-    if (currentRole === "promoter") {
-      return (
-        <PromoterSidebar
-          roles={partnerRoles}
-          onAddPartner={() => setOpenUpgradeModal(true)}
-        />
-      );
-    }
 
-    if (currentRole === "rider") {
-      return (
-        <RiderSidebar
-          roles={partnerRoles}
-          onAddPartner={() => setOpenUpgradeModal(true)}
-        />
-      );
-    }
+  if (currentRole === "vendor") {
+    return (
+      <VendorSidebar
+        roles={partnerRoles}
+        onAddPartner={() => setOpenUpgradeModal(true)}
+        onOpenBusinessProfile={() =>
+          setOpenBusinessProfileModal(true)
+        }
+        hasBusinessProfile={hasBusiness}
+        onAddPhysical={() => setOpenPhysicalModal(true)}
+        onAddDigital={() => setOpenDigitalModal(true)}
+      />
+    );
+  }
 
-    return null;
-  };
+  if (currentRole === "promoter") {
+    return (
+      <PromoterSidebar
+        roles={partnerRoles}
+        onAddPartner={() => setOpenUpgradeModal(true)}
+        onOpenBusinessProfile={() =>
+          setOpenBusinessProfileModal(true)
+        }
+        hasBusinessProfile={hasBusiness}
+      />
+    );
+  }
+
+  if (currentRole === "rider") {
+    return (
+      <RiderSidebar
+        roles={partnerRoles}
+        onAddPartner={() => setOpenUpgradeModal(true)}
+        onOpenBusinessProfile={() =>
+          setOpenBusinessProfileModal(true)
+        }
+        hasBusinessProfile={hasBusiness}
+      />
+    );
+  }
+
+   if (currentRole === "pickup_center") {
+    return (
+      <PickUpSidebar
+        roles={partnerRoles}
+        onAddPartner={() => setOpenUpgradeModal(true)}
+        onOpenBusinessProfile={() =>
+          setOpenBusinessProfileModal(true)
+        }
+        hasBusinessProfile={hasBusiness}
+      />
+    );
+  }
+
+  return null;
+};
+
+
 
   // ================= UI =================
   return (
@@ -209,6 +246,14 @@ export default function AppLayout() {
 
 
       {/* MODALS */}
+
+   <BusinessProfileModal
+  open={openBusinessProfileModal}
+  onClose={() => setOpenBusinessProfileModal(false)}
+  businessId={status?.data?.business?._id}
+/>
+
+
       <UpgradeModal
         open={openUpgradeModal}
         hasBusiness={hasBusiness}
@@ -229,11 +274,4 @@ export default function AppLayout() {
     </div>
   );
 }
-
-
-
-
-
-
-
 

@@ -1,8 +1,8 @@
 
+
+
 import {
   getBuyerDashboardAPI,
-  getBuyerProductsAPI,
-  getBuyerProductByIdAPI,
   getBuyerOrdersAPI,
   placeOrderAPI,
   getOrderTrackingAPI,
@@ -17,14 +17,15 @@ import {
   getAllPickupCentersAPI,
 } from "../api/user/buyer.api";
 
+
 /* ================= SERVICE ================= */
+
+
 export const buyerService = {
   /* dashboard */
   getDashboard: getBuyerDashboardAPI,
 
-  /* products */
-  getProducts: getBuyerProductsAPI,
-  getProductById: getBuyerProductByIdAPI,
+
 
   /* orders */
   getOrders: getBuyerOrdersAPI,
@@ -41,14 +42,11 @@ export const buyerService = {
   clearCart: clearCartAPI,
 
   /* Pickup */
-  getPickupCenters:getAllPickupCentersAPI,
+  getPickupCenters: getAllPickupCentersAPI,
 
   /* BusStop */
-  getBusStopsByState:getBusStopsByStateAPI,
+  getBusStopsByState: getBusStopsByStateAPI,
 
   /* Payment */
-
- getverifyPayment:verifyPaymentAPI,
-  
-
+  getverifyPayment: verifyPaymentAPI,
 };

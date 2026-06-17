@@ -4,7 +4,7 @@
 import { apiClient } from "../../api/core/api.client";
 
 
-import type {Order,Product,AnalyticsData,VendorDiscountsData,VendorOrdersData,VendorSalesData,
+import type {Order,Product,AnalyticsData,VendorDiscountsData,VendorSalesData,
   VendorInventoryData,VendorCategoriesData,VendorPendingOrdersData,VendorCompletedOrdersData,
   VendorReturnsData, VendorDeliveryZonesData, VendorRevenueData,
   VendorPayoutsData,VendorTransactionsData,VendorTaxesData,VendorCustomersData,
@@ -12,6 +12,8 @@ import type {Order,Product,AnalyticsData,VendorDiscountsData,VendorOrdersData,Ve
   VendorSecurityData,VendorPayoutSettingsData,ProductPerformanceData,
 } from "../../types/vendor/vendor.types";
 import type { CreateBusinessShippingRatePayload } from "./vendor.service";
+
+import type { BusinessShippingRate } from "../../types"
 
 /* =========================================================
    ORDERS
@@ -174,11 +176,7 @@ export const toggleDiscountStatus = async (id: string) => {
    ORDERS (FULL LISTS)
 ========================================================= */
 
-export const getVendorOrders =
-  async (): Promise<VendorOrdersData> => {
-    const { data } = await apiClient.get(`/vendor/orders`);
-    return data;
-  };
+
 
 export const getVendorPendingOrders =
   async (): Promise<VendorPendingOrdersData> => {
@@ -429,7 +427,7 @@ export const getVendorProductPerformance =
 
 
   
-import type { BusinessShippingRate } from "../../types/vendor/delivery.types";
+
 
 
 export const getBusinessShippingRates = async (
