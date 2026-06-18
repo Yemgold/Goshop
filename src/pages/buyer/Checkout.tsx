@@ -737,16 +737,23 @@ export default function Checkout() {
     busStops,
     pickupCenters,
     collectionFeeResponse,
+    cartData,
   } = useCheckoutData(form);
   
 
   /* ================= CART SUMMARY ================= */
+ 
   const isReady = items.length > 0 && products.length > 0;
 
-    const cart = useMultiCartSummary(
-    isReady ? items : [],
-    isReady ? products : []
-  );
+const cartId = cartData?._id;
+
+const isCartValid = Boolean(cartId);
+
+const cart = useMultiCartSummary(
+  isReady ? items : [],
+  isReady ? products : [],
+  isCartValid ? cartId : undefined
+);
 
   /* ================= PRICING ================= */
   const {
@@ -782,20 +789,24 @@ export default function Checkout() {
       country: "Nigeria",
     });
 
-    await placeOrder({
-      cart,
-      cartData: items,
-      form,
-      vendorsWithShipping,
-      contactPhone: form.phone,
-      products,
-      shippingSummary: {
-        shippingFeeSummation: shipping.shippingFeeSummation ?? 0,
-        deliveryFeeSummation: shipping.deliveryFeeSummation ?? 0,
-      },
-      deliveryAddress,
-      collectionFee,
-    });
+await placeOrder({
+  cart,
+  cartId: cart.cartId,
+  form,
+  vendorsWithShipping,
+  contactPhone: form.phone,
+  products,
+
+  shippingSummary: {
+    shippingFeeSummation: shipping.shippingFeeSummation ?? 0,
+    deliveryFeeSummation: shipping.deliveryFeeSummation ?? 0,
+  },
+
+  deliveryAddress,
+  collectionFee,
+});
+
+
   };
 
   /* ================= UI ================= */

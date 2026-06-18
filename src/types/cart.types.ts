@@ -1,21 +1,4 @@
 
-
-
-// export interface CartItem {
-//   _id: string;
-//   title?: string;
-//   name: string;
-//   price: number;
-//   image?: string;
-//   weight? :number;
-//   vendor: string;
-//   acceptsGiftCard?: boolean;
-//   quantity: number;
-//   productId: string;
-//   businessId: string;
-// }
-
-
 export type CartItem = {
   productId: string;
   businessId: string;
@@ -40,6 +23,7 @@ export type CartPayload = {
 };
 
 export interface Cart {
+  _id?: string;
   userId: string;
   items: CartItem[];
   total: number;

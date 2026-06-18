@@ -42,22 +42,22 @@ export function useCheckout() {
 
   /* ================= PLACE ORDER ================= */
 
-  const placeOrder = async (payload: {
-    cart: any;
-    cartData: any;
-    form: any;
-    products: any[];
-    vendorsWithShipping: any[];
-    contactPhone: string;
+ const placeOrder = async (payload: {
+  cart: any;
+  cartId: string;
+  form: any;
+  products: any[];
+  vendorsWithShipping: any[];
+  contactPhone: string;
 
-    // MUST come from shipping.engine.ts AFTER bus stop API call
-    shippingSummary: {
-      shippingFeeSummation: number;
-      deliveryFeeSummation: number;
-    };
+  shippingSummary: {
+    shippingFeeSummation: number;
+    deliveryFeeSummation: number;
+  };
 
-    deliveryAddress?: string;
-    collectionFee?: number;
+  deliveryAddress?: string;
+  collectionFee?: number;
+
 
   }) => {
     const customerId = user?.id;
@@ -118,7 +118,7 @@ const vendorOrders = payload.vendorsWithShipping.map((v: any) => ({
 }));
 
     const finalPayload = {
-      cartId: payload.cartData._id,
+      cartId: payload.cartId,
       customerId,
       items,
       contactPhone: payload.contactPhone,

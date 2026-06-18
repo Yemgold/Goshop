@@ -80,10 +80,12 @@ export function useCheckoutData(form: any) {
   });
 
   return {
+    cartData,
     items,
     products,
     busStops,
     pickupCenters,
     collectionFeeResponse,
+    
   };
 }
