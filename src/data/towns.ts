@@ -183,7 +183,7 @@ export const townsByState: Record<string, string[]> = {
   ],
 
   Ekiti: [
-    "Ado Ekiti",
+    "Ado-Ekiti",
     "Ikere",
     "Oye",
   ],
