@@ -1,8 +1,4 @@
 
-
-
-
-
 import {
   getCartAPI,
   addToCartAPI,
