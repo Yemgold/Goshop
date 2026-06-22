@@ -14,7 +14,7 @@ export const UserService = {
         name: "Guest User",
         email: "guest@email.com",
         phone: "",
-        role: "rider",
+        role: "pickup_center",
         createdAt: Date.now(),
       };
     }
