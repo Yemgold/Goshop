@@ -168,6 +168,7 @@ import ViralProductPage from "../../pages/vendor/Product Management/ViralProduct
 import ProductShareAnalytics from "../../pages/vendor/Product Management/ProductShareAnalytics";
 import ViralFeedPage from "../../pages/vendor/Product Management/ViralFeedPage";
 import VerifyPaymentPage from "../../pages/payments/PaystackCallback";
+import OrderFailed from "../../pages/buyer/OrderFailed";
 
 /* =========================
    APP ENTRY
@@ -237,8 +238,8 @@ export default function AppRouter() {
 
     {/* PAYMENT */}
 <Route path="payment/verify" element={<VerifyPaymentPage/>} />
-
-  <Route path="order-success"element={<OrderSuccess />}/>
+<Route path="/buyers/order-success" element={<OrderSuccess />} />
+<Route path="/buyers/order-failed" element={<OrderFailed />} />
 
   {/* TRACKING */}
   <Route path="track/:orderId"element={<OrderTracking />}/>

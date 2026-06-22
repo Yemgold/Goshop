@@ -1,6 +1,5 @@
 
 
-
 import { useNavigate, useLocation } from "react-router-dom";
 
 // UI
@@ -12,15 +11,12 @@ export default function OrderSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ SUPPORT BOTH OLD & NEW FLOW
+  // Order ID (support both patterns)
   const orderId =
     location.state?.orderId ||
     location.state?.order?._id;
 
-  const paymentUrl =
-    location.state?.paymentUrl;
-
-  // SAFETY FALLBACK
+  // SAFETY FALLBACK (no order info passed)
   if (!orderId) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -29,11 +25,7 @@ export default function OrderSuccess() {
             No order found
           </p>
 
-          <Button
-            onClick={() =>
-              navigate("/buyers/home")
-            }
-          >
+          <Button onClick={() => navigate("/buyers/home")}>
             Go Home
           </Button>
         </div>
@@ -44,6 +36,7 @@ export default function OrderSuccess() {
   return (
     <div className="flex items-center justify-center h-screen bg-gray-50">
       <Card className="p-6 text-center max-w-md w-full space-y-4">
+
         {/* HEADER */}
         <PageHeader title="Order Successful 🎉" />
 
@@ -65,26 +58,11 @@ export default function OrderSuccess() {
           Your order has been placed successfully. A rider will be assigned shortly.
         </p>
 
-        {/* PAYMENT ACTION (NEW) */}
-        {paymentUrl && (
-          <a
-            href={paymentUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="block"
-          >
-            <Button className="w-full">
-              Pay Now
-            </Button>
-          </a>
-        )}
-
-        {/* ACTIONS */}
+        {/* ACTION BUTTONS */}
         <div className="flex flex-col gap-3 pt-2">
+
           <Button
-            onClick={() =>
-              navigate("/buyers/home")
-            }
+            onClick={() => navigate("/buyers/home")}
           >
             Continue Shopping
           </Button>
@@ -92,13 +70,12 @@ export default function OrderSuccess() {
           <Button
             variant="danger"
             onClick={() =>
-              navigate(
-                `/buyers/track/${orderId}`
-              )
+              navigate(`/buyers/track/${orderId}`)
             }
           >
             Track Order
           </Button>
+
         </div>
       </Card>
     </div>
