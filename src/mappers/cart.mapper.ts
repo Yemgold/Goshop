@@ -7,6 +7,13 @@ export type EnrichedCartItem = {
   image: string;
   category: string;
   weight: number;
+
+  
+  vendorState?: string;
+  vendorTown?: string;
+
+  businessId?: string;
+  businessState?: string;
 };
 
 const normalizeId = (id: any) =>

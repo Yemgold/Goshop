@@ -67,26 +67,62 @@ export function useLogin() {
       const user = profile?.others || profile;
       const rolesObj = profile?.roles || {};
 
-      // ======================
-      // 4. ROLE DETECTION
-      // ======================
-      const roles: UserRole[] = [];
+/* ======================
+   4. ROLE DETECTION
+====================== */
 
-      if (rolesObj.vendor) roles.push("vendor");
-      if (rolesObj.rider) roles.push("rider");
-      if (rolesObj.promoter) roles.push("promoter");
+const businessRoles =
+  profile?.business?.businessRoles || [];
 
-      if (roles.length === 0) roles.push("user");
+const roles: UserRole[] = [];
 
-      const ROLE_PRIORITY: UserRole[] = [
-        "vendor",
-        "rider",
-        "promoter",
-        "user",
-      ];
+if (
+  rolesObj.vendor ||
+  businessRoles.includes("vendor")
+) {
+  roles.push("vendor");
+}
 
-      const activeRole =
-        ROLE_PRIORITY.find((role) => roles.includes(role)) || "user";
+if (
+  rolesObj.promoter ||
+  businessRoles.includes("promoter")
+) {
+  roles.push("promoter");
+}
+
+if (
+  rolesObj.partner_pickup_center ||
+  businessRoles.includes("partner_pickup_center")
+) {
+  roles.push("partner_pickup_center");
+}
+
+if (roles.length === 0) {
+  roles.push("user");
+}
+
+const ROLE_PRIORITY: UserRole[] = [
+  "vendor",
+  "partner_pickup_center",
+  "promoter",
+  "user",
+];
+
+const activeRole =
+  ROLE_PRIORITY.find((role) =>
+    roles.includes(role)
+  ) || "user";
+
+
+  console.log(
+  "BUSINESS ROLES:",
+  profile?.business?.businessRoles
+);
+
+console.log(
+  "FINAL ROLES:",
+  roles
+);
 
       // ======================
       // BUSINESS ID (FIXED + SAFE)

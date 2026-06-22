@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { buyerService } from "../../services/buyer.api.service";
 import { productService } from "../../services/product.service";
 import {getAllPickupCentersAPI,getBusStopsByStateAPI} from "../../api/user/buyer.api";
-import { getCollectionFeeByStateAPI } from "../../services/shipping.engine";
+import { getCollectionFeeByStateAPI } from "../../services/engine/shipping.engine";
 
 export function useCheckoutData(form: any) {
 
@@ -21,19 +21,28 @@ export function useCheckoutData(form: any) {
     return Array.isArray(cartData?.items) ? cartData.items : [];
   }, [cartData]);
 
-  /* ================= PRODUCTS ================= */
-  const { data: productsRaw } = useQuery({
-    queryKey: ["products"],
-    queryFn: () => productService.getProducts(),
-  });
+/* ================= PRODUCTS ================= */
+const { data: productsRaw } = useQuery({
+  queryKey: ["products"],
+  queryFn: () => productService.getProducts(),
+});
 
-  const products = useMemo(() => {
-    if (!productsRaw) return [];
-    if (Array.isArray(productsRaw)) return productsRaw;
-    if (Array.isArray((productsRaw as any)?.data)) return (productsRaw as any).data;
-    if (Array.isArray((productsRaw as any)?.products)) return (productsRaw as any).products;
-    return [];
-  }, [productsRaw]);
+const products = useMemo(() => {
+  if (!productsRaw) return [];
+
+  if (Array.isArray(productsRaw)) return productsRaw;
+
+  if (Array.isArray((productsRaw as any)?.data))
+    return (productsRaw as any).data;
+
+  if (Array.isArray((productsRaw as any)?.products))
+    return (productsRaw as any).products;
+
+  return [];
+}, [productsRaw]);
+
+console.log("PRODUCTS RAW:", productsRaw);
+console.log("PRODUCTS:", products);
 
   /* ================= BUS STOPS ================= */
   const { data: busStopRes } = useQuery({

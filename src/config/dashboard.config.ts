@@ -42,16 +42,6 @@ export const dashboardConfig: Record<UserRole, DashboardConfig> = {
     ],
   },
 
-  rider: {
-    title: "Rider App 🚴‍♂️",
-    subtitle: "Deliver & earn",
-    nav: [
-      { label: "Jobs", to: "/rider/dashboard" },
-      { label: "Earnings", to: "/rider/earnings" },
-      { label: "History", to: "/rider/jobs" },
-    ],
-  },
-
   promoter: {
     title: "Promoter 📢",
     subtitle: "Share & earn",
@@ -62,7 +52,7 @@ export const dashboardConfig: Record<UserRole, DashboardConfig> = {
     ],
   },
 
-    pickup_center: {
+    partner_pickup_center: {
     title: "Pickup Center Dashboard",
     subtitle: "Manage customer pickups",
     nav: [

@@ -7,12 +7,18 @@ import { useNavigate } from "react-router-dom";
 import { getRoleRoute } from "../../utils/roleRedirect";
 import { useAuthStore } from "../../store/auth.store";
 
-export type UserRole = "vendor" | "rider" | "promoter";
+export type UserRole = "vendor" | "partner_pickup_center" | "promoter";
 
 const roleIcons: Record<UserRole, string> = {
   vendor: "🏪",
-  rider: "🚚",
+  partner_pickup_center: "🚚",
   promoter: "📢",
+};
+
+const roleLabels: Record<UserRole, string> = {
+  vendor: "Vendor",
+  partner_pickup_center: "Hub",
+  promoter: "Promoter",
 };
 
 export default function RoleSwitcher() {
@@ -21,13 +27,18 @@ export default function RoleSwitcher() {
   const user = useAuthStore((s) => s.user);
   const setRole = useAuthStore((s) => s.setRole);
 
-  const roles = user?.roles || [];
+
+const roles = user?.roles || [];
+
+// console.log("USER:", user);
+// console.log("ROLES:", user?.roles);
+
   const currentRole = user?.activeRole;
 
   if (!user || roles.length === 0) return null;
 
   const handleChange = (role: UserRole) => {
-    console.log("🔄 SWITCH ROLE:", role);
+    // console.log("🔄 SWITCH ROLE:", role);
 
     // 1. update auth store ONLY (single source of truth)
     setRole(role);
@@ -63,7 +74,7 @@ export default function RoleSwitcher() {
           }`}
         >
           <span>{roleIcons[role as UserRole]}</span>
-          <span className="capitalize">{role}</span>
+          <span>{roleLabels[role as UserRole]}</span>
         </button>
       ))}
     </div>

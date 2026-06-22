@@ -12,7 +12,12 @@ import {
   Plus,
   Heart,
   PackageCheck,
+  Store,
   Search,
+  Gift,
+  CreditCard,
+  Ticket,
+  
   Star,
   User,
   Settings,
@@ -122,6 +127,34 @@ export function BuyerSidebar({
             },
           ],
         },
+        // ================= GIFT CARD =================
+        
+
+        {
+  label: "Gift Card",
+  icon: <Gift size={18} />,
+  children: [
+    {
+      label: "Redeem Card",
+      path: "/buyers/redeem/card",
+      icon: <CreditCard size={18} />,
+    },
+    {
+      label: "Activate Card",
+      path: "/buyers/activate/card",
+      icon: <Ticket size={18} />,
+    },
+    {
+      label: "GiftCard Store",
+      path: "/buyers/giftcard/store",
+      icon: <Store size={18} />,
+    },
+  ],
+}
+
+
+
+
       ]}
 
       footer={

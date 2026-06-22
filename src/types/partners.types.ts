@@ -1,11 +1,11 @@
 
 
 type Base = {
-  role: "vendor" | "rider" | "promoter"| "pickup_center";
+  role: "vendor" | "promoter"| "partner_pickup_center";
 
   business: {
     businessName: string;
-    businessRoles: ("vendor" | "rider" | "promoter"| "pickup_center")[];
+    businessRoles: ("vendor" | "promoter"| "partner_pickup_center")[];
   };
 };
 
@@ -16,15 +16,6 @@ export type BecomeVendor = Base & {
   description: string;
 };
 
-/* ================= RIDER ================= */
-export type BecomeRider = Base & {
-  role: "rider";
-  vehicleType: string;
-  licenseNumber: string;
-  bankName: string;
-  accountNumber: string;
-  accountName: string;
-};
 
 /* ================= PROMOTER ================= */
 export type BecomePromoter = Base & {
@@ -36,15 +27,32 @@ export type BecomePromoter = Base & {
 
 /* ================= PICKUP CENTER ================= */
 export type BecomePickupCenter = Base & {
-  role: "pickup_center";
-  pickupAddress: string;
-  pickupState: string;
-  contactPhone: string;
+  role:  "partner_pickup_center";
+    businessId: string;
+
+  name: string;
+  state: string;
+  town: string;
+  address: string;
+  phone: string;
+
+
+  ownershipType: "partner" | "platform";
+
+  business: {
+    businessName: string;
+    businessRoles: (
+      | "vendor"
+      | "promoter"
+      | "partner_pickup_center"
+    )[];
+  };
 };
+
+
 
 export type BecomePartnerPayload =
   | BecomeVendor
-  | BecomeRider
   |BecomePickupCenter
   | BecomePromoter;
 

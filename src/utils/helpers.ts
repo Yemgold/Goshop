@@ -22,9 +22,6 @@ export const getRoleRoute = (user: AuthUser): string => {
     case "user":
       return "/buyers/home";
 
-    case "rider":
-      return "/rider/jobs";
-
     case "promoter":
       return "/promoter/dashboard";
 

@@ -33,8 +33,8 @@ export interface AuthUser {
   roleRequests: RoleRequest[];
 
   isVendor?: boolean;
-  isRider?: boolean;
   isPromoter?: boolean;
+  isPartnerPickupCenter?: boolean;
 
   hasAllPartnerRoles?: boolean;
 
@@ -161,7 +161,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const roles: UserRole[] = [];
 
     if (rolesObj.vendor) roles.push("vendor");
-    if (rolesObj.rider) roles.push("rider");
+    if (rolesObj.partner_pickup_center) roles.push("partner_pickup_center");
     if (rolesObj.promoter) roles.push("promoter");
 
     if (roles.length === 0) roles.push("user");
@@ -169,8 +169,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const activeRole: UserRole =
       roles.includes("vendor")
         ? "vendor"
-        : roles.includes("rider")
-        ? "rider"
+        : roles.includes("partner_pickup_center")
+        ? "partner_pickup_center"
         : roles.includes("promoter")
         ? "promoter"
         : "user";
@@ -195,7 +195,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   roleRequests: [],
 
   isVendor: roles.includes("vendor"),
-  isRider: roles.includes("rider"),
+  isPartnerPickupCenter: roles.includes("partner_pickup_center"),
   isPromoter: roles.includes("promoter"),
 
   hasAllPartnerRoles: roles.length > 1,

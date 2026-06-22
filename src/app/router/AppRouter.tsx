@@ -205,23 +205,6 @@ export default function AppRouter() {
         {/* ENTRY */}
         <Route path="/app" element={<AppEntry />} />
 
-        {/* =========================
-           BUYER
-        ========================= */}
-        {/* <Route path="/buyers" element={<AppLayout />}>
-          <Route index element={<BuyerDashboard />} />
-          <Route path="dashboard" element={<BuyerDashboard />} />
-          <Route path="home" element={<BuyerHome />} />
-          <Route path="products" element={<ProductList />} />
-          <Route path="product/:id" element={<ProductDetail />} />
-          <Route path="cart" element={<Cart />} />
-          <Route path="checkout" element={<Checkout />} />
-          <Route path="giftcard-checkout" element={<GiftCardCheckout />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="order-success" element={<OrderSuccess />} />
-          <Route path="track/:orderId" element={<OrderTracking />} />
-        </Route> */}
-
 
 {/* =========================
     BUYER
@@ -418,7 +401,7 @@ export default function AppRouter() {
         <Route
           path="/profile"
           element={
-            <ProtectedRoute allowedRoles={["rider", "vendor", "promoter"]}>
+            <ProtectedRoute allowedRoles={["partner_pickup_center" , "vendor", "promoter"]}>
               <Profile />
             </ProtectedRoute>
           }

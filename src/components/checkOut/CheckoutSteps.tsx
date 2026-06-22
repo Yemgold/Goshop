@@ -134,52 +134,56 @@ export default function CheckoutSteps({
           {form.deliveryMode === "homeDelivery" && (
             <div className="space-y-3">
 
-              <select
-                value={form.selectedTown}
-                onChange={(e) => form.setSelectedTown(e.target.value)}
-                className="w-full border rounded-xl p-3"
-              >
-                <option value="">Select Town</option>
-                {(townsByState[form.selectedState?.trim()] || []).map(
-                  (t: any) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  )
-                )}
-              </select>
+             <select
+  value={form.selectedTown ?? ""}
+  onChange={(e) => form.setSelectedTown(e.target.value)}
+  className="w-full border rounded-xl p-3"
+>
+  <option value="">Select Town</option>
 
-              <select
-                value={form.nearestBusStop}
-                onChange={(e) => form.setNearestBusStop(e.target.value)}
-                className="w-full border rounded-xl p-3"
-              >
-                <option value="">Select Nearest Bus Stop</option>
+  {(townsByState[form.selectedState?.trim() || ""] || []).map(
+    (t: any) => (
+      <option key={t} value={t}>
+        {t}
+      </option>
+    )
+  )}
+</select>
 
-                {busStops?.map((stop: any) => (
-                  <option key={stop._id} value={stop.nearestBusStop}>
-                    {stop.nearestBusStop}
-                  </option>
-                ))}
-              </select>
+            <select
+  value={form.nearestBusStop ?? ""}   // ✅ FIX HERE
+  onChange={(e) => form.setNearestBusStop(e.target.value)}
+  className="w-full border rounded-xl p-3"
+>
+  <option value="">Select Nearest Bus Stop</option>
 
-              <input
-                value={form.address}
-                onChange={(e) => form.setAddress(e.target.value)}
-                placeholder="Enter Delivery Address"
-                className="w-full border rounded-xl p-3"
-              />
-            </div>
-          )}
+  {(busStops || []).map((stop: any) => (
+    <option key={stop._id} value={stop.nearestBusStop}>
+      {stop.nearestBusStop}
+    </option>
+  ))}
+</select>
 
-          {/* PHONE */}
-          <input
-            value={form.phone}
-            onChange={(e) => form.setPhone(e.target.value)}
-            placeholder="Phone Number"
-            className="w-full border rounded-xl p-3"
-          />
+                 <input
+      value={form.address ?? ""}   // ✅ FIX HERE
+      onChange={(e) => form.setAddress(e.target.value)}
+      placeholder="Enter Delivery Address"
+      className="w-full border rounded-xl p-3"
+    />
+  </div>
+)}
+
+{/* PHONE */}
+<input
+  value={form.phone ?? ""}        // ✅ FIX HERE
+  onChange={(e) => form.setPhone(e.target.value)}
+  placeholder="Phone Number"
+  className="w-full border rounded-xl p-3"
+/>
+
+
         </div>
+
       )}
 
       {/* ================= STEP 4 ================= */}

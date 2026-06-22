@@ -15,7 +15,7 @@ import AppHeroHeader from "../../components/ui/AppHeroHeader";
 import { BuyerSidebar } from "../../components/layout/BuyerSidebar";
 import { VendorSidebar } from "../../components/layout/VendorSidebar";
 import { PromoterSidebar } from "../../components/layout/PromoterSidebar";
-import { RiderSidebar } from "../../components/layout/RiderSidebar";
+
 import { PickUpSidebar } from "../../components/layout/PickUpSidebar";
 
 import UpgradeModal from "../../components/partner/UpgradeModal";
@@ -130,20 +130,8 @@ export default function AppLayout() {
     );
   }
 
-  if (currentRole === "rider") {
-    return (
-      <RiderSidebar
-        roles={partnerRoles}
-        onAddPartner={() => setOpenUpgradeModal(true)}
-        onOpenBusinessProfile={() =>
-          setOpenBusinessProfileModal(true)
-        }
-        hasBusinessProfile={hasBusiness}
-      />
-    );
-  }
 
-   if (currentRole === "pickup_center") {
+   if (currentRole === "partner_pickup_center") {
     return (
       <PickUpSidebar
         roles={partnerRoles}
@@ -225,8 +213,8 @@ export default function AppLayout() {
               ? "Vendor Panel 🏪"
               : currentRole === "promoter"
               ? "Promoter Hub 📢"
-              : currentRole === "rider"
-              ? "Rider Panel 🛵"
+              : currentRole === "partner_pickup_center"
+              ? "PickUp Hub 🛵"
               : "User Dashboard 🛍️"
           }
           subtitle={`Welcome back, ${fullName || "User"} 👋`}

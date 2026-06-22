@@ -43,9 +43,8 @@ export function VendorSidebar({
   // ================= PARTNER CHECK =================
 const partnerRoles: PartnerRole[] = [
   "vendor",
-  "rider",
   "promoter",
-  "pickup_center",
+  "partner_pickup_center",
 ];
 
 const hasAllRoles = partnerRoles.every((role) =>

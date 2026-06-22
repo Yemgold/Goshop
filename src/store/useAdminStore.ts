@@ -6,7 +6,7 @@ import { create } from "zustand";
 type AdminUserRole =
   | "user"
   | "vendor"
-  | "rider"
+  | "pickup_center"
   | "promoter"
   | "staff"
   | "admin"

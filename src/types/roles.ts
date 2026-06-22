@@ -1,11 +1,10 @@
 
 
-export type UserRole = "user" | "vendor" | "rider" | "promoter" | "pickup_center" | "admin"   ;
+export type UserRole = "user" | "vendor" | "promoter" | "partner_pickup_center" | "admin"   ;
 
 export type PartnerRole =
   | "vendor"
-  | "rider"
-  | "pickup_center" 
+  | "partner_pickup_center" 
   | "promoter";
 
 

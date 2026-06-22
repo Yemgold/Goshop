@@ -17,25 +17,24 @@ export function useCheckoutForm() {
 
   /* ================= HOME DELIVERY ================= */
 
-  const [selectedState, setSelectedState] =
-    useState<string>("");
+  const [selectedState, setSelectedState] = useState<string | null>(null);
 
   const [selectedTown, setSelectedTown] =
-    useState<string>("");
+    useState<string| null>(null);
 
   const [address, setAddress] =
-    useState<string>("");
+    useState<string| null>(null);
 
   const [nearestBusStop, setNearestBusStop] =
-    useState<string>("");
+    useState<string| null>(null);
 
   /* ================= PICKUP ================= */
 
   const [pickupCenterId, setPickupCenterId] =
-    useState<string>("");
+    useState<string| null>(null);
 
   const [pickupCenterName, setPickupCenterName] =
-    useState<string>("");
+    useState<string| null>(null);
 
   /* ================= COMMON ================= */
 
