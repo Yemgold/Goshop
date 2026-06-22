@@ -20,6 +20,8 @@ export default function Checkout() {
   /* ================= FORM ================= */
   const form = useCheckoutForm();
 
+  
+
   /* ================= DATA LAYER ================= */
   const {
     items,
@@ -60,41 +62,121 @@ const cart = useMultiCartSummary(
     collectionFeeResponse,
   });
 
+
+const validateCheckout = () => {
+  /* ================= COMMON ================= */
+
+  if (!form.phone?.trim()) {
+    toast.error("Phone number is required");
+    return false;
+  }
+
+  if (!form.deliveryMode) {
+    toast.error("Please select a delivery method");
+    return false;
+  }
+
+  /* ================= HOME DELIVERY ================= */
+
+  if (form.deliveryMode === "homeDelivery") {
+    if (!form.selectedState?.trim()) {
+      toast.error("Please select a state");
+      return false;
+    }
+
+    if (!form.selectedTown?.trim()) {
+      toast.error("Please select a town");
+      return false;
+    }
+
+    if (!form.address?.trim()) {
+      toast.error("Please enter your delivery address");
+      return false;
+    }
+
+    if (!form.nearestBusStop?.trim()) {
+      toast.error("Please enter your nearest bus stop");
+      return false;
+    }
+  }
+
+  /* ================= PICKUP ================= */
+
+  if (
+    form.deliveryMode ===
+    "pickUpFromOurNearestOffice"
+  ) {
+    if (!form.pickupCenterId?.trim()) {
+      toast.error("Please select a pickup center");
+      return false;
+    }
+  }
+
+  /* ================= CART ================= */
+
+  if (!cart?.vendors?.length) {
+    toast.error("Cart is empty");
+    return false;
+  }
+
+  return true;
+};
+
+
+
+
+  const canPlaceOrder =
+  !!form.phone?.trim() &&
+  !!form.deliveryMode &&
+  cart?.vendors?.length > 0 &&
+  (
+    form.deliveryMode === "homeDelivery"
+      ? !!form.selectedState?.trim() &&
+        !!form.selectedTown?.trim() &&
+        !!form.address?.trim() &&
+        !!form.nearestBusStop?.trim()
+      : !!form.pickupCenterId?.trim()
+  );
+
+
   /* ================= CONTROLLER ================= */
   const controller = useCheckoutController(form, cart, isReady);
 
   /* ================= CHECKOUT ACTION ================= */
   const { placeOrder, isPending } = useCheckout();
 
-  const handlePlaceOrder = async () => {
-    if (!cart?.vendors?.length) {
-      toast.error("Cart not ready");
-      return;
-    }
+ const handlePlaceOrder = async () => {
+  if (!validateCheckout()) {
+    return;
+  }
 
-    const deliveryAddress = JSON.stringify({
-      street: form.address,
-      town: form.selectedTown,
-      state: form.selectedState,
-      country: "Nigeria",
-    });
+  const deliveryAddress = JSON.stringify({
+    street: form.address,
+    town: form.selectedTown,
+    state: form.selectedState,
+    country: "Nigeria",
+  });
 
-await placeOrder({
-  cart,
-  cartId: cart.cartId,
-  form,
-  vendorsWithShipping,
-  contactPhone: form.phone,
-  products,
+  await placeOrder({
+    cart,
+    cartId: cart.cartId,
+    form,
+    vendorsWithShipping,
+    contactPhone: form.phone,
+    products,
 
-  shippingSummary: {
-    shippingFeeSummation: shipping.shippingFeeSummation ?? 0,
-    deliveryFeeSummation: shipping.deliveryFeeSummation ?? 0,
-  },
+    shippingSummary: {
+      shippingFeeSummation:
+        shipping.shippingFeeSummation ?? 0,
 
-  deliveryAddress,
-  collectionFee,
-});
+      deliveryFeeSummation:
+        shipping.deliveryFeeSummation ?? 0,
+    },
+
+    deliveryAddress,
+    collectionFee,
+  });
+
 
 
   };
@@ -170,7 +252,7 @@ await placeOrder({
             {controller.step === 4 && (
               <button
                 onClick={handlePlaceOrder}
-                disabled={isPending || !isReady}
+                disabled={isPending || !canPlaceOrder}
                 className="px-4 py-2 bg-black text-white rounded-xl"
               >
                 {isPending ? "Processing..." : "Place Order"}
@@ -199,9 +281,10 @@ await placeOrder({
 
         {controller.step === 4 ? (
           <button
-            onClick={handlePlaceOrder}
-            className="bg-black text-white px-4 py-2 rounded-xl"
-          >
+  onClick={handlePlaceOrder}
+  disabled={isPending || !canPlaceOrder}
+  className="bg-black text-white px-4 py-2 rounded-xl disabled:opacity-50"
+>
             Place Order
           </button>
         ) : (
