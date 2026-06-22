@@ -69,48 +69,54 @@ export const calculateShipping = (
     if (id) productMap.set(id, p);
   }
 
-  /* ================= 2. GROUP CART ITEMS ================= */
+/* ================= 2. GROUP CART ITEMS (PRODUCTION SAFE) ================= */
 
-  const grouped = new Map<string, ShippingVendor>();
+const grouped = new Map<string, ShippingVendor>();
 
-  for (const item of items) {
-    const product = productMap.get(normalizeId(item.productId));
+for (const item of items) {
+  const product = productMap.get(normalizeId(item.productId));
 
-    if (!product) continue;
+  if (!product) continue;
+  if (!item.businessId) continue;
 
-    const businessId = item.businessId;
-    if (!businessId) continue;
+  const weight = Number((product as any)?.weight ?? 1);
 
-    const weight = Number((product as any).weight ?? 1);
+  // ✅ SAFE BUSINESS STATE EXTRACTION
+  const rawState =
+    (product as any)?.business?.businessAddress?.state;
 
-    let vendor = grouped.get(businessId);
+  const businessState =
+    typeof rawState === "string" ? rawState.trim() : "";
 
-    if (!vendor) {
-      vendor = {
-        businessId,
-        businessState:
-  (product as any)?.business?.businessAddress?.state?.trim() || "",
+  let vendor = grouped.get(item.businessId);
 
-        items: [],
-        subtotal: 0,
-        totalWeight: 0,
+  if (!vendor) {
+    vendor = {
+      businessId: item.businessId,
 
-        shippingFee: 0,
-        deliveryFee: 0,
-      };
+      // ✅ never allow undefined/unstable value
+      businessState: businessState || "UNKNOWN",
 
-      grouped.set(businessId, vendor);
-    }
+      items: [],
+      subtotal: 0,
+      totalWeight: 0,
 
-    vendor.items.push(item);
-    vendor.subtotal += item.price * item.quantity;
-    vendor.totalWeight += weight * item.quantity;
+      shippingFee: 0,
+      deliveryFee: 0,
+    };
+
+    grouped.set(item.businessId, vendor);
   }
 
-  const vendors = Array.from(grouped.values());
+  vendor.items.push(item);
+  vendor.subtotal += item.price * item.quantity;
+  vendor.totalWeight += weight * item.quantity;
+}
 
-  let shippingFeeSummation = 0;
-  let deliveryFeeSummation = 0;
+const vendors = Array.from(grouped.values());
+
+let shippingFeeSummation = 0;
+let deliveryFeeSummation = 0;
 
   /* ================= 3. DELIVERY MODE: PICKUP ================= */
 
