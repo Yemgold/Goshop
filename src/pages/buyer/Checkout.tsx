@@ -63,6 +63,22 @@ const cart = useMultiCartSummary(
   });
 
 
+  const stockIssues = products.filter((product: any) => {
+  const cartItem = items.find(
+    (item: any) =>
+      String(item.productId) === String(product._id || product.id)
+  );
+
+  if (!cartItem) return false;
+
+  const stock = Number(product.stock || 0);
+
+  return Number(cartItem.quantity) > stock;
+});
+
+const hasStockIssues = stockIssues.length > 0;
+
+
 const validateCheckout = () => {
   /* ================= COMMON ================= */
 
@@ -126,6 +142,7 @@ const validateCheckout = () => {
 
 
   const canPlaceOrder =
+  !hasStockIssues &&
   !!form.phone?.trim() &&
   !!form.deliveryMode &&
   cart?.vendors?.length > 0 &&
@@ -147,6 +164,13 @@ const validateCheckout = () => {
 
  const handlePlaceOrder = async () => {
   if (!validateCheckout()) {
+
+if (hasStockIssues) {
+  toast.error(
+    "Some products exceed available stock. Please update your cart."
+  );
+  return false;
+}
     return;
   }
 
@@ -228,6 +252,27 @@ const validateCheckout = () => {
             townsByState={townsByState}
           />
 
+         {hasStockIssues && (
+  <div className="p-4 rounded-xl border border-red-300 bg-red-50">
+    <h3 className="font-semibold text-red-700 mb-2">
+      Stock Issue Detected
+    </h3>
+
+    <p className="text-red-600 text-sm">
+      One or more items in your cart exceed available stock.
+      Please return to your cart and reduce the quantity.
+    </p>
+
+    <ul className="mt-2 text-sm text-red-700 list-disc ml-5">
+      {stockIssues.map((product: any) => (
+        <li key={product._id || product.id}>
+          {product.name} — Available Stock: {product.stock}
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
           {/* FOOTER BUTTONS */}
           <div className="flex gap-3 justify-between pt-4">
 
@@ -255,7 +300,14 @@ const validateCheckout = () => {
                 disabled={isPending || !canPlaceOrder}
                 className="px-4 py-2 bg-black text-white rounded-xl"
               >
-                {isPending ? "Processing..." : "Place Order"}
+               
+               {hasStockIssues
+  ? "Stock Unavailable"
+  : isPending
+  ? "Processing..."
+  : "Place Order"}
+
+
               </button>
             )}
           </div>
@@ -285,6 +337,13 @@ const validateCheckout = () => {
   disabled={isPending || !canPlaceOrder}
   className="bg-black text-white px-4 py-2 rounded-xl disabled:opacity-50"
 >
+
+             {hasStockIssues
+  ? "Stock Unavailable"
+  : isPending
+  ? "Processing..."
+  : "Place Order"}
+
             Place Order
           </button>
         ) : (
