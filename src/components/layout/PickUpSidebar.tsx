@@ -60,10 +60,28 @@ export function PickUpSidebar({
           path: "/pickup/dashboard",
           icon: <BarChart3 size={18} />,
         },
+      ],
+    },
+
+        // ================= RIDERS =================
+    {
+      label: "Riders",
+      icon: <ClipboardList size={18} />,
+      children: [
         {
-          label: "Analytics",
-          path: "/pickup/analytics",
-          icon: <BarChart3 size={18} />,
+          label: "Rider Management",
+          path: "/pickup/riders/management",
+          icon: <Package size={18} />,
+        },
+        {
+          label: "Rider Invitations",
+          path: "/pickup/riders/invite",
+          icon: <PackageCheck size={18} />,
+        },
+        {
+          label: "Rider Performance",
+          path: "/pickup/rider/preformance",
+          icon: <CheckCircle2 size={18} />,
         },
       ],
     },

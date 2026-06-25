@@ -7,18 +7,21 @@ import { useNavigate } from "react-router-dom";
 import { getRoleRoute } from "../../utils/roleRedirect";
 import { useAuthStore } from "../../store/auth.store";
 
-export type UserRole = "vendor" | "partner_pickup_center" | "promoter";
+export type UserRole = "vendor" | "partner_pickup_center" | "rider"| "promoter";
+
 
 const roleIcons: Record<UserRole, string> = {
   vendor: "🏪",
   partner_pickup_center: "🚚",
   promoter: "📢",
+  rider: "",
 };
 
 const roleLabels: Record<UserRole, string> = {
   vendor: "Vendor",
   partner_pickup_center: "Hub",
   promoter: "Promoter",
+  rider: "rider",
 };
 
 export default function RoleSwitcher() {

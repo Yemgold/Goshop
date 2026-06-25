@@ -5,10 +5,12 @@
 
 
 import { apiClient } from "../../api/core/api.client";
+import { getBusinessSingleOrderToFulfilAPI } from "../../api/user/vendor.api";
 import type {
   Order,
   VendorOrder,
   VendorOrdersResponse,
+  
 } from "../../types/vendor/vendor.types";
 
 /* =========================================================
@@ -23,7 +25,7 @@ export type OrderStatus =
   | "canceled";
 
 export interface GetVendorOrdersParams {
-  vendorId: string;
+  businessId: string;
   page?: number;
   limit?: number;
   status?: OrderStatus;
@@ -37,10 +39,10 @@ export interface GetVendorOrdersParams {
 export const getVendorOrders = async (
   params: GetVendorOrdersParams
 ): Promise<VendorOrder[]> => {
-  const { vendorId, page = 1, limit = 10, status, search = "" } = params;
+  const { businessId, page = 1, limit = 10, status, search = "" } = params;
 
-  const { data } = await apiClient.get<VendorOrdersResponse>(
-    `/orders/vendor/${vendorId}`,
+  const response = await apiClient.get<VendorOrdersResponse>(
+    `/orders/business-orders-to-fulfil/${businessId}`,
     {
       params: {
         page,
@@ -51,22 +53,55 @@ export const getVendorOrders = async (
     }
   );
 
-  return data.data;
+  console.log("FULL RESPONSE", response.data);
+
+  return response.data.data.data;
 };
 
 /* =========================================================
    GET SINGLE ORDER (VENDOR CONTEXT)
 ========================================================= */
 
-export const getVendorOrderById = async (
-  id: string
-): Promise<Order> => {
-  const { data } = await apiClient.get(
-    `/orders/${id}`
-  );
+// export const getBusinessSingleOrderToFulfil = async (
+//   businessId: string,
+//   orderId: string
+// ) => {
+//   console.log("BUSINESS ID SENT:", businessId);
+//   console.log("ORDER ID SENT:", orderId);
 
-  return data.data;
+//   const response =
+//     await getBusinessSingleOrderToFulfilAPI(
+//       businessId,
+//       orderId
+//     );
+
+//   console.log("ORDER DETAILS RESPONSE:", response);
+//   console.log("FIRST ITEM:", response.data?.[0]);
+
+//   return response.data?.[0];
+// };
+
+
+
+export const getBusinessSingleOrderToFulfil = async (
+  businessId: string,
+  orderId: string
+) => {
+  console.log("BUSINESS ID SENT:", businessId);
+  console.log("ORDER ID SENT:", orderId);
+
+  const response =
+    await getBusinessSingleOrderToFulfilAPI(
+      businessId,
+      orderId
+    );
+
+  console.log("ORDER DETAILS RESPONSE:", response);
+  console.log("FIRST ITEM:", response.data?.[0]);
+
+  return response.data?.[0] || null;
 };
+
 
 /* =========================================================
    UPDATE ORDER STATUS (SINGLE SOURCE OF TRUTH)

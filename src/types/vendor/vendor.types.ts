@@ -454,7 +454,12 @@ export interface VendorOrder extends BaseEntity {
 export interface VendorOrdersResponse {
   success: boolean;
   message: string;
-  data: VendorOrder[];
+  data: {
+    data: VendorOrder[];
+    total: number;
+    page: number;
+    limit: number;
+  };
 }
 
 export interface PendingOrder extends VendorOrder {

@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { buyerService } from "../../services/buyer.api.service";
 import { productService } from "../../services/product.service";
 import {getAllPickupCentersAPI,getBusStopsByStateAPI} from "../../api/user/buyer.api";
-import { getCollectionFeeByStateAPI } from "../../services/engine/shipping.engine";
+import { getCollectionFeeByStateAPI } from "../../services/engine/shipping.engine"; 
 
 export function useCheckoutData(form: any) {
 

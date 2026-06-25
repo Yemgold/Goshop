@@ -5,12 +5,11 @@ import * as api from "../../api/user/vendor.api";
 import { apiClient } from "../../api/core/api.client";
 
 import type {
-  Order,
+  
   Product,
   AnalyticsData,
   VendorDiscountsData,
-  VendorOrder,
-  VendorOrdersResponse,
+  
   VendorSalesData,
   VendorInventoryData,
   VendorCategoriesData,
@@ -35,18 +34,18 @@ import type {
 
 /* ================= ORDERS ================= */
 
-export const getOrderById = async (
-  id: string
-): Promise<Order> => {
-  return api.getVendorOrderByIdAPI(id);
-};
+// export const getBusinessOrdersToFulfil = async (
+//   businessId: string
+// ): Promise<Order[]> => {
+//   return api.getBusinessOrdersToFulfilAPI(businessId);
+// };
 
-export const updateVendorOrder = async (
-  id: string,
-  status: Order["status"]
-): Promise<Order> => {
-  return api.updateVendorOrderAPI(id, status);
-};
+// export const updateVendorOrder = async (
+//   id: string,
+//   status: Order["status"]
+// ): Promise<Order> => {
+//   return api.updateVendorOrderAPI(id, status);
+// };
 
 /* ================= PRODUCTS ================= */
 
@@ -166,22 +165,7 @@ export const toggleDiscountStatus = async (
   return api.toggleDiscountStatusAPI(id);
 };
 
-/* ================= ORDERS ================= */
-export const getVendorOrders = async (
-  vendorId: string,
-  page = 1,
-  limit = 10,
-  searchParams = ""
-): Promise<VendorOrder[]> => {
-  const { data } = await apiClient.get<VendorOrdersResponse>(
-    `/orders/vendor/${vendorId}`,
-    {
-      params: { page, limit, searchParams },
-    }
-  );
 
-  return data.data;
-};
 
 export const updateOrderStatus = async (
   id: string,

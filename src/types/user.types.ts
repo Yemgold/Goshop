@@ -1,6 +1,6 @@
 
 
-export type UserRole = "user" | "promoter" | "vendor"| "pickup_center";
+export type UserRole = "user" | "promoter" | "vendor"| "rider"|"pickup_center";
 
 export interface UserProfile {
   id: string;

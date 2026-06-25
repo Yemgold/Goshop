@@ -20,13 +20,32 @@ export const getVendorDashboardAPI = async (): Promise<DashboardData> => {
 
 
 
+export const getBusinessOrdersToFulfilAPI = async (
+  businessId: string
+) => {
+  const res = await apiClient.get(
+    `/orders/business-orders-to-fulfil/${businessId}`
+  );
 
-export const getVendorOrderByIdAPI = async (
-  id: string
-): Promise<Order> => {
-  const res = await apiClient.get(`/orders/vendor/${id}`);
   return res.data;
 };
+
+
+
+export const getBusinessSingleOrderToFulfilAPI = async (
+  businessId: string,
+  orderId: string
+) => {
+  const res = await apiClient.get(
+    `/orders/business-single-order-to-fulfil/${businessId}/${orderId}`
+  );
+
+  return res.data;
+};
+
+
+
+
 
 export const updateVendorOrderAPI = async (
   id: string,

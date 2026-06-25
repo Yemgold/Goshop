@@ -43,6 +43,8 @@ export interface AuthUser {
   businessId?: string | null;
   businessName?: string;
 
+  pickupCenterId?: string;
+
   
   businessState?: string;
   businessPhone?: string;

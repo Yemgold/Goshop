@@ -1,6 +1,35 @@
 
 import { apiClient } from "../core/api.client";
 
+import type {
+  DashboardData,
+  CreateRiderInvitePayload
+  
+} from "../../types/pickup/pickup.types";
+
+
+/* ================= DASHBOARD ================= */
+
+export const getPickupDashboardAPI = async (): Promise<DashboardData> => {
+  const res = await apiClient.get("/dashboard/pickup");
+  return res.data;
+};
+
+
+export const createRiderInvite = async (
+  payload: CreateRiderInvitePayload
+) => {
+  const res = await apiClient.post(
+    "/rider-invites/create-invite",
+    payload
+  );
+
+  return res.data;
+};
+
+
+
+
 
 export const getStatePickupCentersAPI =
   async (state: string) => {

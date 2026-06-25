@@ -12,3 +12,6 @@ export type VendorOrderDetail = {
   orderStatus: string;
   createdAt?: string;
 };
+
+
+

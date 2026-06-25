@@ -169,6 +169,11 @@ import ProductShareAnalytics from "../../pages/vendor/Product Management/Product
 import ViralFeedPage from "../../pages/vendor/Product Management/ViralFeedPage";
 import VerifyPaymentPage from "../../pages/payments/PaystackCallback";
 import OrderFailed from "../../pages/buyer/OrderFailed";
+import PickupDashboard from "../../pages/pickup/dashboard";
+import PickupOrders from "../../pages/pickup/Orders";
+import InviteRider from "../../pages/pickup/riders/InviteRider";
+import RiderManagement from "../../pages/pickup/riders/RiderManagement";
+import RiderDetails from "../../pages/pickup/riders/RiderDetails";
 
 /* =========================
    APP ENTRY
@@ -335,6 +340,7 @@ export default function AppRouter() {
           {/* =========================
     PROMOTER
 ========================= */}
+
 <Route path="/promoter" element={<AppLayout />}>
 
   <Route index element={<PromoterDashboard />} />
@@ -382,7 +388,21 @@ export default function AppRouter() {
 </Route>
 
 
+/* =========================
+    PICKUP CENTER
+========================= */
 
+<Route path="/pickup" element={<AppLayout />}>
+
+  <Route index element={<PickupDashboard />} />
+  <Route path="dashboard" element={<PickupDashboard />} />
+  <Route path="orders" element={<PickupOrders />} />
+  <Route path="riders/management" element={<RiderManagement />} />
+  <Route path="riders/invite" element={<InviteRider />} />
+  <Route path="rider/details" element={<RiderDetails/>} />
+ 
+
+</Route>
 
         {/* ADMIN */}
         <Route path="/admin" element={<AdminLayout />}>

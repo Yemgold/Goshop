@@ -106,6 +106,7 @@ const ROLE_PRIORITY: UserRole[] = [
   "partner_pickup_center",
   "promoter",
   "user",
+  "rider",
 ];
 
 const activeRole =
