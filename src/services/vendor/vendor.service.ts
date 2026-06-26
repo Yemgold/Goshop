@@ -9,7 +9,7 @@ import type {
   Product,
   AnalyticsData,
   VendorDiscountsData,
-  
+  Order,
   VendorSalesData,
   VendorInventoryData,
   VendorCategoriesData,
@@ -40,12 +40,12 @@ import type {
 //   return api.getBusinessOrdersToFulfilAPI(businessId);
 // };
 
-// export const updateVendorOrder = async (
-//   id: string,
-//   status: Order["status"]
-// ): Promise<Order> => {
-//   return api.updateVendorOrderAPI(id, status);
-// };
+export const updateVendorOrder = async (
+  id: string,
+  status: Order["status"]
+): Promise<Order> => {
+  return api.updateVendorOrderAPI(id, status);
+};
 
 /* ================= PRODUCTS ================= */
 

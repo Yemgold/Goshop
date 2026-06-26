@@ -71,6 +71,32 @@ export const dashboardConfig: Record<UserRole, DashboardConfig> = {
     ],
   },
 
+
+      rider: {
+    title: "Rider Dashboard",
+    subtitle: "Deliver pickups",
+    nav: [
+      {
+        label: "Dashboard",
+        to: "/rider/dashboard",
+      },
+      {
+        label: "Incoming Orders",
+        to: "/rider/orders",
+      },
+      {
+        label: "Ready For Pickup",
+        to: "/pickup/ready",
+      },
+    ],
+  },
+
+
+
+
+
+
+
    admin: {
     title: "Admin Dashboard",
     subtitle: "System administration",
