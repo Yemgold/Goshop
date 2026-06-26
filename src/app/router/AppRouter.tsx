@@ -174,6 +174,9 @@ import PickupOrders from "../../pages/pickup/Orders";
 import InviteRider from "../../pages/pickup/riders/InviteRider";
 import RiderManagement from "../../pages/pickup/riders/RiderManagement";
 import RiderDetails from "../../pages/pickup/riders/RiderDetails";
+import BecomeRider from "../../pages/buyer/BeComeRider";
+import GiftcardStore from "../../pages/buyer/GiftcardStore";
+import ActivateCard from "../../pages/buyer/ActivateCard";
 
 /* =========================
    APP ENTRY
@@ -216,38 +219,53 @@ export default function AppRouter() {
     BUYER
 ========================= */}
 
-<Route path="/buyers" element={<AppLayout />}>
+<Route path="/buyers"element={<AppLayout />}>
 
   {/* DASHBOARD */}
   <Route index element={<BuyerDashboard />}/>
   <Route path="dashboard" element={<BuyerDashboard />}/>
 
+ 
+
   {/* HOME */}
-  <Route path="home" element={<BuyerHome />}/>
+  <Route path="home"element={<BuyerHome />}/>
 
   {/* PRODUCTS */}
-  <Route path="products" element={<ProductList />}/>
+  <Route path="products"element={<ProductList />}/>
 
-  <Route path="product/:id" element={<ProductDetail />}/>
+  <Route path="product/:id"element={<ProductDetail />}/>
 
   {/* CART */}
   {/* REMOVE if backend has no cart system */}
-  <Route path="cart" element={<Cart />}/>
+  <Route path="cart"element={<Cart />}/>
 
   {/* CHECKOUT */}
-  <Route path="checkout" element={<Checkout />}/>
+  <Route path="checkout"element={<Checkout />}/>
 
 
   {/* ORDERS */}
-  <Route path="orders" element={<Orders />} />
+  <Route path="orders"element={<Orders />} />
 
     {/* PAYMENT */}
 <Route path="payment/verify" element={<VerifyPaymentPage/>} />
-<Route path="/buyers/order-success" element={<OrderSuccess />} />
-<Route path="/buyers/order-failed" element={<OrderFailed />} />
+<Route path="/buyers/order-success"element={<OrderSuccess />} />
+<Route path="/buyers/order-failed"element={<OrderFailed />} />
 
   {/* TRACKING */}
   <Route path="track/:orderId"element={<OrderTracking />}/>
+
+ {/* RETURNS*/}
+  <Route path="returns"element={<OrderTracking />}/>
+ 
+{/* GIFT CARD STORE*/}
+  <Route path="giftcard/store"element={<GiftcardStore />}/>
+  
+   <Route path="activate/card"element={<ActivateCard />}/>
+
+{/* BEOME RIDER */}
+  <Route path="/buyers/become-rider"element={<BecomeRider />}/>
+
+ 
 </Route>
 
 
@@ -400,6 +418,9 @@ export default function AppRouter() {
   <Route path="riders/management" element={<RiderManagement />} />
   <Route path="riders/invite" element={<InviteRider />} />
   <Route path="rider/details" element={<RiderDetails/>} />
+ 
+
+ 
  
 
 </Route>

@@ -2,7 +2,7 @@
 
 
 
-import { Outlet, Navigate, Link } from "react-router-dom";
+import { Outlet, Navigate, useNavigate,Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { Menu, X, ShoppingCart } from "lucide-react";
@@ -90,12 +90,14 @@ export default function AppLayout() {
   ) as PartnerRole[];
 
   // ================= SIDEBAR =================
+  const navigate = useNavigate();
   const renderSidebar = () => {
     if (currentRole === "user") {
       return (
         <BuyerSidebar
           roles={partnerRoles}
           onAddPartner={() => setOpenUpgradeModal(true)}
+           onBecomeRider={() => navigate("/buyers/become-rider")}
         />
       );
     }

@@ -78,11 +78,6 @@ export function PickUpSidebar({
           path: "/pickup/riders/invite",
           icon: <PackageCheck size={18} />,
         },
-        {
-          label: "Rider Performance",
-          path: "/pickup/rider/preformance",
-          icon: <CheckCircle2 size={18} />,
-        },
       ],
     },
 
