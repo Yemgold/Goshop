@@ -1,13 +1,12 @@
 
 
-// USING ONLY CART ITEM AS source of truth
+
 
 import { useMemo } from "react";
 import { calculateShipping } from "../../services/engine/shipping.engine";
 
 export function useCheckoutPricing({
   cart,
-  products,
   form,
   deliveryRates,
   collectionFeeResponse,
@@ -40,14 +39,12 @@ export function useCheckoutPricing({
 
     return calculateShipping(
       cartItems,
-      products,
       selectedState,
       deliveryRates,
       deliveryMode
     );
   }, [
     cartItems,
-    products,
     selectedState,
     deliveryRates,
     deliveryMode,

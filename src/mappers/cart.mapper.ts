@@ -1,3 +1,14 @@
+
+
+export type ShippingRate = {
+  destinationState: string;
+  weightRanges: {
+    min: number;
+    max: number | null;
+    price: number;
+  }[];
+};
+
 export type EnrichedCartItem = {
   productId: string;
   quantity: number;
@@ -13,6 +24,8 @@ export type EnrichedCartItem = {
 
   businessId?: string;
   businessState?: string;
+
+  shippingRates?: ShippingRate[];
 };
 
 const normalizeId = (id: any) =>
@@ -45,6 +58,9 @@ export const enrichCartItems = (
     /* ================= BUSINESS INFO ================= */
 
     const business = product?.business || {};
+
+console.log("PRODUCT", product);
+console.log("BUSINESS", business);
 
     const businessId =
       business?._id ||

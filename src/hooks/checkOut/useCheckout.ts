@@ -46,7 +46,7 @@ export function useCheckout() {
   cart: any;
   cartId: string;
   form: any;
-  products: any[];
+  
   vendorsWithShipping: any[];
   contactPhone: string;
 
@@ -95,21 +95,13 @@ export function useCheckout() {
 const vendorOrders = payload.vendorsWithShipping.map((v: any) => ({
   businessId: v.businessId,
 
-  items: v.items.map((item: any) => {
-    const product = payload.products.find(
-      (p: any) => (p._id || p.id) === item.productId
-    );
-
-
-
-    return {
-      productId: item.productId,
-      name: String(product?.name || "Product"),
-      quantity: Number(item.quantity || 0),
-      price: Number(item.price || 0),
-      weight: Number(product?.weight || 0),
-    };
-  }),
+  items: v.items.map((item: any) => ({
+    productId: item.productId,
+    name: String(item.title || item.name || "Product"),
+    quantity: Number(item.quantity || 0),
+    price: Number(item.price || 0),
+    weight: Number(item.weight || 0),
+  })),
 
   subtotal: v.subtotal,
   totalWeight: v.totalWeight,

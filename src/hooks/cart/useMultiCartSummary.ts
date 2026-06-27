@@ -4,29 +4,32 @@
 import { useMemo } from "react";
 import { groupCartByVendor } from "../../mappers/group.cart.mapper";
 
-export function useMultiCartSummary(items: any[], products: any[] ,cartId?: string) 
-{
+export function useMultiCartSummary(
+  items: any[],
+  cartId?: string
+) {
   const safeItems = Array.isArray(items) ? items : [];
-  const safeProducts = Array.isArray(products) ? products : [];
 
   const vendors = useMemo(() => {
-    if (safeItems.length === 0 || safeProducts.length === 0) return [];
-    return groupCartByVendor(safeItems, safeProducts);
-  }, [safeItems, safeProducts]);
+    return groupCartByVendor(safeItems);
+  }, [safeItems]);
 
-  const total = vendors.reduce(
-    (sum, v) => sum + (v.subtotal || 0),
-    0
+  const total = useMemo(
+    () => vendors.reduce((sum, v) => sum + (v.subtotal || 0), 0),
+    [vendors]
   );
 
-  const totalWeight = vendors.reduce(
-    (sum, v) => sum + (v.totalWeight || 0),
-    0
+  const totalWeight = useMemo(
+    () => vendors.reduce((sum, v) => sum + (v.totalWeight || 0), 0),
+    [vendors]
   );
 
-  
-
-   return { cartId: cartId || "", vendors, total, totalWeight };
+  return {
+    cartId: cartId || "",
+    vendors,
+    total,
+    totalWeight,
+  };
 }
 
 
