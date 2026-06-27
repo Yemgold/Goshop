@@ -77,7 +77,7 @@ export default function VerifyPaymentPage() {
           toast.success("Payment successful");
 
           await new Promise((resolve) =>
-            setTimeout(resolve, 1200)
+            setTimeout(resolve, 10000)
           );
 
           navigate("/buyers/order-success", {
