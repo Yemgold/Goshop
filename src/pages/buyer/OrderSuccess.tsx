@@ -17,6 +17,7 @@ export default function OrderSuccess() {
     location.state?.order?._id;
 
   // SAFETY FALLBACK (no order info passed)
+
   if (!orderId) {
     return (
       <div className="flex items-center justify-center h-screen">
