@@ -157,11 +157,7 @@ export function PromoterSidebar({
       label: "Market Place",
       icon: <ShoppingBag size={18} />,
       children: [
-        {
-          label: "Go Shopping",
-          path: "/buyer/home",
-          icon: <Home size={18} />,
-        },
+       
         {
           label: "Buy Goods",
           path: "/buyers/dashboard",

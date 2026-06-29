@@ -221,7 +221,7 @@ import {
   Heart,
   PackageCheck,
   Store,
-  Search,
+ 
   Gift,
   Ticket,
   Star,
@@ -255,14 +255,12 @@ export function BuyerSidebar({
           children: [
             {
               label: "Home",
-              path: "/buyers/home",
+              path: "/buyers/dashboard",
               icon: <LayoutDashboard size={18} />,
             },
-            {
-              label: "Browse Products",
-              path: "/buyers/products",
-              icon: <Search size={18} />,
-            },
+
+        
+            
             {
               label: "Categories",
               path: "/buyers/categories",

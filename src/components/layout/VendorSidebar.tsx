@@ -214,11 +214,7 @@ const handleUpgradePartnership = () => {
       label: "Market Place",
       icon: <ShoppingBag size={18} />,
       children: [
-        {
-          label: "Go Shopping",
-          path: "/buyers/home",
-          icon: <Home size={18} />,
-        },
+       
         {
           label: "Buy Goods",
           path: "/buyers/dashboard",

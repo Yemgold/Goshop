@@ -8,7 +8,6 @@ import {
   MapPin,
   Wallet,
   ShoppingBag,
-  Home,
   ShoppingCart,
   Sparkles,
   PackageCheck,
@@ -141,11 +140,7 @@ export function RiderSidebar({
       label: "Market Place",
       icon: <ShoppingBag size={18} />,
       children: [
-        {
-          label: "Go Shopping",
-          path: "/buyer/home",
-          icon: <Home size={18} />,
-        },
+       
         {
           label: "Buy Goods",
           path: "/buyers/dashboard",

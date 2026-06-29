@@ -94,7 +94,7 @@ export function EmptyCartState({
       {stage === "done" && !hasItems && (
         <>
           <Button
-            onClick={() => navigate("/buyers/home")}
+            onClick={() => navigate("/buyers/marketplace")}  
             className="px-6 py-3 w-52"
           >
             Start Shopping

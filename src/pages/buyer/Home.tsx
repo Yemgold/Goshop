@@ -1,173 +1,114 @@
+
+
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
-import { productService } from "../../services/product.service"; 
-import { useCart } from "../../hooks/cart/useCart";
-import { useWishlist } from "../../hooks/buyer/useWishlist";
+import { productService } from "../../services/product.service";
 
-import { ProductCard } from "../../components/buyer/ProductCard";
-import { ProductFilters } from "../../components/buyer/ProductFilters";
-import { ProductQuickView } from "../../components/buyer/ProductQuickView";
+import MarketplaceHero from "../../components/buyer/marketplace/MarketplaceHero";
+import MarketplaceToolbar from "../../components/buyer/marketplace/MarketplaceToolbar";
+import MarketplaceLoading from "../../components/buyer/marketplace/MarketplaceLoading";
+import ProductGrid from "../../components/buyer/marketplace/ProductGrid";
 
+
+
+import { useCart } from "../../hooks/cart/useCartPublick";
 import { toCartPayload } from "../../mappers/cart.payload";
 
-/* ================= TYPES ================= */
-
-type Product = {
-  _id?: string;
-  id?: string;
-  name?: string;
-  title?: string;
-  price: number;
-  category?: string;
-  createdAt?: string;
-  media?: { type?: string; url?: string }[];
-};
-
-export default function BuyerHome() {
+const ProductList: React.FC = () => {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
-  const { cartCount, addToCart } = useCart();
-  const { toggleWishlist, isWished } = useWishlist();
-
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("popular");
-  const [category, setCategory] = useState("all");
-  const [quickView, setQuickView] = useState<any>(null);
+  const [search, setSearch] = React.useState("");
+  const [category, setCategory] = React.useState("All");
+  const [sortBy, setSortBy] = React.useState("Newest");
+  const [view, setView] = React.useState<"grid" | "list">("grid");
 
   /* ================= FETCH PRODUCTS ================= */
 
-const { data } = useQuery({
-  queryKey: ["products"],
-  queryFn: () => productService.getProducts(),
-});
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => productService.getProducts({
+      page: 1,
+      limit: 10,
+    }),
+  });
 
-/* FIX: always use .products */
-const products: Product[] = data?.products ?? [];
+  /* ================= SAFE PRODUCTS ================= */
+
+  const products = data?.products ?? [];
+
+  const categories = [
+    "All",
+    "Electronics",
+    "Fashion",
+    "Phones",
+    "Computers",
+    "Home",
+    "Beauty",
+    "Food",
+    "Vehicles",
+  ];
 
 
-  /* ================= NORMALIZE IMAGE ================= */
 
-  const normalizedProducts = useMemo(() => {
-    return products.map((p) => ({
-      ...p,
-      image:
-        p.media?.find((m) => m?.type === "image")?.url ||
-        p.media?.[0]?.url ||
-        "/placeholder.png",
-    }));
-  }, [products]);
-
-  /* ================= FILTER + SORT ================= */
-
-  const filtered = useMemo(() => {
-    let result = [...normalizedProducts];
-
-    // SEARCH
-    result = result.filter((p) => {
-      const name = (p.name || p.title || "").toLowerCase();
-      return name.includes(search.toLowerCase());
-    });
-
-    // CATEGORY
-    if (category !== "all") {
-      result = result.filter((p) => p.category === category);
-    }
-
-    // SORT
-    if (sortBy === "priceLow") {
-      result.sort((a, b) => a.price - b.price);
-    }
-
-    if (sortBy === "priceHigh") {
-      result.sort((a, b) => b.price - a.price);
-    }
-
-    if (sortBy === "newest") {
-      result.sort(
-        (a, b) =>
-          new Date(b.createdAt ?? 0).getTime() -
-          new Date(a.createdAt ?? 0).getTime()
-      );
-    }
-
-    return result;
-  }, [normalizedProducts, search, sortBy, category]);
-
-  /* ================= CATEGORIES (FIXED TYPES) ================= */
-
-  const categories = useMemo(() => {
-    return [
-      ...new Set(
-        products
-          .map((p) => p.category)
-          .filter(
-            (c): c is string =>
-              typeof c === "string" && c.trim() !== ""
-          )
-      ),
-    ];
-  }, [products]);
-
-  /* ================= CART ================= */
-
-  const handleAddToCart = async (product: any) => {
-    await addToCart.mutateAsync(toCartPayload(product, 1));
-  };
+  
 
   return (
-    <div className="p-6 space-y-6">
-      {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Marketplace</h1>
+    <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <MarketplaceHero totalProducts={products.length} />
 
-        <button onClick={() => navigate("/buyers/cart")}>
-          Cart ({cartCount})
-        </button>
-      </div>
-
-      {/* FILTERS */}
-      <ProductFilters
-        categories={categories}
-        selectedCategory={category}
-        setSelectedCategory={setCategory}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
+      <MarketplaceToolbar
         search={search}
         setSearch={setSearch}
+        category={category}
+        setCategory={setCategory}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        view={view}
+        setView={setView}
+        categories={categories}
+        totalProducts={products.length}
       />
 
-      {/* GRID */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {filtered.map((product) => (
-          <ProductCard
-            key={product._id || product.id}
-            product={product}
-            onAddToCart={handleAddToCart}
-            onQuickView={setQuickView}
-            isWished={isWished}
-            toggleWishlist={toggleWishlist}
-          />
-        ))}
-      </div>
+      {isError && (
+        <p className="text-center text-red-500">
+          Error loading products
+        </p>
+      )}
 
-      {/* QUICK VIEW */}
-      <ProductQuickView
-        product={quickView}
-        onClose={() => setQuickView(null)}
-      />
+      {isLoading ? (
+        <MarketplaceLoading />
+      ) : (
+        <ProductGrid
+          products={products}
+          view={view}
+          onView={(product) =>
+            navigate(`/buyers/product/${product._id || product.id}`)
+          }
+          onAddToCart={async (product) => {
+            try {
+              await addToCart.mutateAsync(
+                toCartPayload(product, 1)
+              );
+
+              toast.success("Added to cart");
+            } catch (error: any) {
+              toast.error(
+                error?.response?.data?.message ||
+                  "Unable to add item"
+              );
+            }
+          }}
+        />
+      )}
     </div>
   );
-}
+};
 
-
-
-
-
-
-
-
+export default ProductList;
 
 
 
@@ -176,22 +117,31 @@ const products: Product[] = data?.products ?? [];
 
 
 // import { useNavigate } from "react-router-dom";
-// import { useInfiniteQuery } from "@tanstack/react-query";
-// import { useMemo, useState, useEffect, useRef } from "react";
+// import { useQuery } from "@tanstack/react-query";
+// import { useMemo, useState } from "react";
 
-// import { buyerService } from "../../services/buyer.api.service";
+// import { productService } from "../../services/product.service"; 
 // import { useCart } from "../../hooks/cart/useCart";
 // import { useWishlist } from "../../hooks/buyer/useWishlist";
 
-// import { ProductCard } from "../../components/buyer/ProductCard";
-// import { ProductFilters } from "../../components/buyer/ProductFilters";
-// import { ProductQuickView } from "../../components/buyer/ProductQuickView";
+// import { ProductCard } from "../../components/buyer/digitalplace/ProductCard";
+// import { ProductFilters } from "../../components/buyer/digitalplace/ProductFilters";
+// import { ProductQuickView } from "../../components/buyer/digitalplace/ProductQuickView";
 
 // import { toCartPayload } from "../../mappers/cart.payload";
 
+// /* ================= TYPES ================= */
 
-
-
+// type Product = {
+//   _id?: string;
+//   id?: string;
+//   name?: string;
+//   title?: string;
+//   price: number;
+//   category?: string;
+//   createdAt?: string;
+//   media?: { type?: string; url?: string }[];
+// };
 
 // export default function BuyerHome() {
 //   const navigate = useNavigate();
@@ -204,98 +154,67 @@ const products: Product[] = data?.products ?? [];
 //   const [category, setCategory] = useState("all");
 //   const [quickView, setQuickView] = useState<any>(null);
 
-//   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+//   /* ================= FETCH PRODUCTS ================= */
 
-//   /* ================= INFINITE QUERY ================= */
-
-
-// const {
-//   data,
-//   fetchNextPage,
-//   hasNextPage,
-//   isFetchingNextPage,
-//   isLoading,
-//   error,
-//   refetch,
-// } = useInfiniteQuery({
-//   queryKey: ["products", search, category, sortBy],
-
-//   initialPageParam: 1,
-
-//   queryFn: async ({ pageParam = 1 }) => {
-//     const res = await buyerService.getProductsPaginated(pageParam, 20);
-
-//     return {
-//       data: Array.isArray(res?.data) ? res.data : [],
-//       meta: res?.meta ?? {
-//         currentPage: pageParam,
-//         totalPages: 1,
-//       },
-//     };
-//   },
-
-//   getNextPageParam: (lastPage) => {
-//     const meta = lastPage?.meta;
-
-//     if (!meta) return undefined;
-
-//     const current = meta.currentPage ?? 1;
-//     const total = meta.totalPages ?? 1;
-
-//     return current < total ? current + 1 : undefined;
-//   },
-
-//   retry: 2,
+// const { data } = useQuery({
+//   queryKey: ["products"],
+//   queryFn: () => productService.getProducts(),
 // });
 
+// /* FIX: always use .products */
+// const products: Product[] = data?.products ?? [];
 
 
+//   /* ================= NORMALIZE IMAGE ================= */
 
-
-//   /* ================= FLATTEN PRODUCTS ================= */
-
-// const products = useMemo(() => {
-//   return (
-//     data?.pages
-//       ?.filter(Boolean)
-//       ?.flatMap((page: any) => page?.data ?? []) ?? []
-//   );
-// }, [data]);
-
+//   const normalizedProducts = useMemo(() => {
+//     return products.map((p) => ({
+//       ...p,
+//       image:
+//         p.media?.find((m) => m?.type === "image")?.url ||
+//         p.media?.[0]?.url ||
+//         "/placeholder.png",
+//     }));
+//   }, [products]);
 
 //   /* ================= FILTER + SORT ================= */
+
 //   const filtered = useMemo(() => {
-//     let result = [...products];
+//     let result = [...normalizedProducts];
 
-//     // search
-//     result = result.filter((p) =>
-//       (p.title || p.name)
-//         ?.toLowerCase()
-//         .includes(search.toLowerCase())
-//     );
+//     // SEARCH
+//     result = result.filter((p) => {
+//       const name = (p.name || p.title || "").toLowerCase();
+//       return name.includes(search.toLowerCase());
+//     });
 
-//     // category
+//     // CATEGORY
 //     if (category !== "all") {
 //       result = result.filter((p) => p.category === category);
 //     }
 
-//     // sort
-//     switch (sortBy) {
-//       case "priceLow":
-//         result.sort((a, b) => a.price - b.price);
-//         break;
-//       case "priceHigh":
-//         result.sort((a, b) => b.price - a.price);
-//         break;
-//       case "newest":
-//         result.reverse();
-//         break;
+//     // SORT
+//     if (sortBy === "priceLow") {
+//       result.sort((a, b) => a.price - b.price);
+//     }
+
+//     if (sortBy === "priceHigh") {
+//       result.sort((a, b) => b.price - a.price);
+//     }
+
+//     if (sortBy === "newest") {
+//       result.sort(
+//         (a, b) =>
+//           new Date(b.createdAt ?? 0).getTime() -
+//           new Date(a.createdAt ?? 0).getTime()
+//       );
 //     }
 
 //     return result;
-//   }, [products, search, sortBy, category]);
+//   }, [normalizedProducts, search, sortBy, category]);
 
-//   /* ================= CATEGORIES ================= */
+//   /* ================= CATEGORIES (FIXED TYPES) ================= */
+
 //   const categories = useMemo(() => {
 //     return [
 //       ...new Set(
@@ -309,59 +228,20 @@ const products: Product[] = data?.products ?? [];
 //     ];
 //   }, [products]);
 
-//   /* ================= INFINITE SCROLL OBSERVER ================= */
-//  useEffect(() => {
-//   const el = loadMoreRef.current;
-//   if (!el || !hasNextPage) return;
 
-//   const observer = new IntersectionObserver((entries) => {
-//     if (entries[0].isIntersecting && !isFetchingNextPage) {
-//       fetchNextPage();
-//     }
-//   });
 
-//   observer.observe(el);
 
-//   return () => observer.disconnect();
-// }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+//   /* ================= CART ================= */
 
-//   /* ================= ADD TO CART ================= */
 //   const handleAddToCart = async (product: any) => {
 //     await addToCart.mutateAsync(toCartPayload(product, 1));
 //   };
 
-//   /* ================= LOADING ================= */
-//   if (isLoading) {
-//     return (
-//       <div className="p-6 space-y-6">
-//         <h1 className="text-2xl font-bold">Marketplace</h1>
-
-//         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-//           {Array.from({ length: 8 }).map((_, i) => (
-//             <div
-//               key={i}
-//               className="h-64 bg-gray-200 animate-pulse rounded-xl"
-//             />
-//           ))}
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   /* ================= ERROR ================= */
-//   if (error) {
-//     return (
-//       <div className="p-6 text-center space-y-4">
-//         <p className="text-red-500">Failed to load products</p>
-//         <button onClick={() => refetch()}>Retry</button>
-//       </div>
-//     );
-//   }
-
 //   return (
+    
 //     <div className="p-6 space-y-6">
 //       {/* HEADER */}
-//       <div className="flex justify-between">
+//       <div className="flex justify-between items-center">
 //         <h1 className="text-2xl font-bold">Marketplace</h1>
 
 //         <button onClick={() => navigate("/buyers/cart")}>
@@ -384,7 +264,7 @@ const products: Product[] = data?.products ?? [];
 //       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 //         {filtered.map((product) => (
 //           <ProductCard
-//             key={product._id}
+//             key={product._id || product.id}
 //             product={product}
 //             onAddToCart={handleAddToCart}
 //             onQuickView={setQuickView}
@@ -392,18 +272,6 @@ const products: Product[] = data?.products ?? [];
 //             toggleWishlist={toggleWishlist}
 //           />
 //         ))}
-//       </div>
-
-//       {/* LOADING MORE */}
-//       <div
-//         ref={loadMoreRef}
-//         className="h-10 flex justify-center items-center"
-//       >
-//         {isFetchingNextPage && (
-//           <p className="text-sm text-gray-500">
-//             Loading more products...
-//           </p>
-//         )}
 //       </div>
 
 //       {/* QUICK VIEW */}
@@ -414,3 +282,5 @@ const products: Product[] = data?.products ?? [];
 //     </div>
 //   );
 // }
+
+

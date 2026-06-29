@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 import { useBuyerProduct } from "../../hooks/buyer/useBuyerProduct";
-import { useCart } from "../../hooks/cart/useCart";
+import { useCart } from "../../hooks/cart/useCartPublick";
 import { useRecentlyViewed } from "../../hooks/buyer/useRecentlyViewed";
 
 import { toCartPayload } from "../../mappers/cart.payload";

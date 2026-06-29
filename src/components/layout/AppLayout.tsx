@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Menu, X, ShoppingCart } from "lucide-react";
 
 import { useAuthStore } from "../../store/auth.store";
-import { useCart } from "../../hooks/cart/useCart"; 
+import { useCart } from "../../hooks/cart/useCartPublick"; 
 
 import AppHeroHeader from "../../components/ui/AppHeroHeader";
 

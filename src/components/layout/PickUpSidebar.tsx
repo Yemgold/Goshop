@@ -9,7 +9,6 @@ import {
   ClipboardList,
   Wallet,
   ShoppingBag,
-  Home,
   ShoppingCart,
   Users,
   Bell,
@@ -150,11 +149,7 @@ export function PickUpSidebar({
       label: "Market Place",
       icon: <ShoppingBag size={18} />,
       children: [
-        {
-          label: "Go Shopping",
-          path: "/buyer/home",
-          icon: <Home size={18} />,
-        },
+        
         {
           label: "Buy Goods",
           path: "/buyers/dashboard",

@@ -1,3 +1,5 @@
+
+
 import {
   useQuery,
   useMutation,
@@ -61,6 +63,3 @@ export const useCart = () => {
     clearCart,
   };
 };
-
-
-

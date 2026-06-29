@@ -44,7 +44,7 @@ import Staff from "../../pages/admin/Staff";
 /* =========================
    BUYER
 ========================= */
-import BuyerHome from "../../pages/buyer/Home";
+// import BuyerHome from "../../pages/buyer/Home";
 import BuyerDashboard from "../../pages/buyer/Dashboard";
 import ProductList from "../../pages/buyer/ProductList";
 import ProductDetail from "../../pages/buyer/ProductDetail";
@@ -177,6 +177,8 @@ import RiderDetails from "../../pages/pickup/riders/RiderDetails";
 import BecomeRider from "../../pages/buyer/BeComeRider";
 import GiftcardStore from "../../pages/buyer/GiftcardStore";
 import ActivateCard from "../../pages/buyer/ActivateCard";
+import PublicBuyerLayout from "../../components/layout/PublicBuyerLayout";
+import DigitalProducts from "../../pages/buyer/DigitalProducts";
 
 /* =========================
    APP ENTRY
@@ -214,6 +216,24 @@ export default function AppRouter() {
         {/* ENTRY */}
         <Route path="/app" element={<AppEntry />} />
 
+       {/* PUBLIC BUYER HOME */}
+  
+ {/* ================= PUBLIC BUYER ================= */}
+
+ <Route path="/market" element={<PublicBuyerLayout />}>
+  <Route path="place" element={<ProductList />} />
+  </Route>
+
+<Route path="/digital" element={<PublicBuyerLayout />}>
+  <Route path="products" element={<DigitalProducts/>} />
+  </Route>
+
+
+
+
+
+
+
 
 {/* =========================
     BUYER
@@ -225,15 +245,10 @@ export default function AppRouter() {
   <Route index element={<BuyerDashboard />}/>
   <Route path="dashboard" element={<BuyerDashboard />}/>
 
- 
+<Route path="marketplace" element={<ProductList />} />
 
-  {/* HOME */}
-  <Route path="home"element={<BuyerHome />}/>
+<Route path="product/:id" element={<ProductDetail />} />
 
-  {/* PRODUCTS */}
-  <Route path="products"element={<ProductList />}/>
-
-  <Route path="product/:id"element={<ProductDetail />}/>
 
   {/* CART */}
   {/* REMOVE if backend has no cart system */}

@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 import { checkoutService } from "../../services/checkout.service";
-import { useCart } from "../cart/useCart";
+import { useCart } from "../cart/useCartPublick";
 import { useAuthStore } from "../../store/auth.store";
 
 export function useCheckout() {

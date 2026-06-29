@@ -283,7 +283,7 @@ export default function LandingPage() {
           </Button>
 
           <Button
-            onClick={() => navigate("/buyer/home")}
+            onClick={() => navigate("/market/place")}
             className="bg-white/10 border border-white/20 hover:bg-white/20"
           >
             Start Shopping

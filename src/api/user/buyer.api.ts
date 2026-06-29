@@ -13,13 +13,6 @@ export const getBuyerDashboardAPI = async (): Promise<DashboardData> => {
   return res.data.data;
 };
 
-/* ================= PRODUCTS ================= */
-
-
-
-
-
-
 
 /* ================= ORDERS ================= */
 export const getBuyerOrdersAPI = async (buyerId: string) => {
