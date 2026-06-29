@@ -165,17 +165,13 @@ export default function Register() {
           />
 
           <button
-  type="submit"
-  className="w-full py-3 rounded-xl font-semibold
-             bg-black text-white
-             shadow-lg
-             hover:bg-neutral-900
-             active:scale-[0.98]
-             transition-all duration-200
-             disabled:opacity-60 disabled:cursor-not-allowed"
->
-  Create Account
-</button>
+            type="submit"
+            className="w-full py-3 rounded-xl font-medium
+                       bg-gradient-to-r from-blue-600 to-indigo-600
+                       text-white disabled:opacity-60"
+          >
+            Create Account
+          </button>
 
                     {/* LINKS */}
           <div className="text-center text-sm mt-3 space-y-1">
