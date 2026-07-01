@@ -179,6 +179,7 @@ import GiftcardStore from "../../pages/buyer/GiftcardStore";
 import ActivateCard from "../../pages/buyer/ActivateCard";
 import PublicBuyerLayout from "../../components/layout/PublicBuyerLayout";
 import DigitalProducts from "../../pages/buyer/DigitalProducts";
+import AddStock from "../../pages/vendor/Product Management/AddStock";
 
 /* =========================
    APP ENTRY
@@ -304,6 +305,7 @@ export default function AppRouter() {
           <Route path="orders/completed" element={<CompletedOrders />} />
 
           <Route path="inventory" element={<Inventory />} />
+           <Route path="stock" element={<AddStock />} />
           <Route path="sales" element={<Sales />} />
           <Route path="returns" element={<Returns />} />
 

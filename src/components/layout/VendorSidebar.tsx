@@ -105,6 +105,11 @@ const handleUpgradePartnership = () => {
           icon: <PackageCheck size={18} />,
         },
         {
+          label: "Add Stock",
+          path: "/vendor/stock",
+          icon: <PackageCheck size={18} />,
+        },
+        {
           label: "Categories",
           path: "/vendor/categories",
           icon: <Package size={18} />,

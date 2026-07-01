@@ -24,6 +24,8 @@ export type Product = {
   category?: string;
   inStock?: boolean;
   stock?: number;
+  sku: string;
+  reservedQuantity?: number; 
 
   vendor?:
     | string
@@ -32,15 +34,7 @@ export type Product = {
         businessName?: string;
       };
 
-  businessId?: {
-    _id: string;
-    businessName: string;
-    businessAddress?: {
-      state?: string;
-      town?: string;
-      address?: string;
-    };
-  };
+  businessId?: string;
 
   media?: ProductMedia[];
   shippingRates?: ShippingRate[];

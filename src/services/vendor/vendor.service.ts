@@ -5,8 +5,6 @@ import * as api from "../../api/user/vendor.api";
 import { apiClient } from "../../api/core/api.client";
 
 import type {
-  
-  Product,
   AnalyticsData,
   VendorDiscountsData,
   Order,
@@ -32,13 +30,10 @@ import type {
   ProductPerformanceData,
 } from "../../types/vendor/vendor.types";
 
+import type{ Product } from "../../types";
+
 /* ================= ORDERS ================= */
 
-// export const getBusinessOrdersToFulfil = async (
-//   businessId: string
-// ): Promise<Order[]> => {
-//   return api.getBusinessOrdersToFulfilAPI(businessId);
-// };
 
 export const updateVendorOrder = async (
   id: string,
@@ -49,8 +44,16 @@ export const updateVendorOrder = async (
 
 /* ================= PRODUCTS ================= */
 
-export const getVendorProducts = async (): Promise<Product[]> => {
-  return api.getVendorProductsAPI();
+export const getVendorProducts = async (
+  businessId: string,
+  page = 1,
+  limit = 10
+): Promise<Product[]> => {
+  return api.getVendorProductsAPI(
+    businessId,
+    page,
+    limit
+  );
 };
 
 /* ================= UPDATE PRODUCT ================= */

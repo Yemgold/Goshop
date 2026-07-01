@@ -5,8 +5,10 @@ import type {
   DashboardData,
   AnalyticsData,
   Order,
-  Product,
+  AddStockPayload,
 } from "../../types/vendor/vendor.types";
+
+import type { Product } from "../../types"; 
 
 /* ================= DASHBOARD ================= */
 
@@ -68,11 +70,30 @@ export const updateVendorOrderAPI = async (
 
 /* ================= PRODUCTS ================= */
 
-export const getVendorProductsAPI = async (): Promise<Product[]> => {
-  const res = await apiClient.get("/vendor/products");
-  console.log("VENDOR PRODUCTS RESPONSE:", res.data);
-  return res.data;
+export const getVendorProductsAPI = async (
+  businessId: string,
+  page = 1,
+  limit = 10
+): Promise<Product[]> => {
+
+  const res = await apiClient.get(
+    `/products/get-products-by-businessId/${businessId}?page=${page}&limit=${limit}`
+  );
+
+  console.log("FULL RESPONSE");
+  console.log(JSON.stringify(res.data, null, 2));
+
+  console.log("LEVEL 1", res.data.data);
+  console.log("LEVEL 2", res.data.data?.data);
+  console.log("LEVEL 3", res.data.data?.data?.products);
+
+  return res.data.data?.data?.products ?? [];
 };
+
+
+
+
+
 
 export const deleteVendorProductAPI = async (
   id: string
@@ -103,6 +124,22 @@ export const getVendorInventoryAPI = async () => {
   const res = await apiClient.get("/vendor/inventory");
   return res.data;
 };
+
+
+/* ================= ADD STOCK ================= */
+
+export const addStockAPI = async (
+  payload: AddStockPayload
+) => {
+  const res = await apiClient.post(
+    "/inventory/add-stock",
+    payload
+  );
+
+  return res.data;
+};
+
+
 
 /* ================= CATEGORIES ================= */
 

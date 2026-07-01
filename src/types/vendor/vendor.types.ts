@@ -382,6 +382,15 @@ export interface VendorInventoryData {
   products: InventoryProduct[];
 }
 
+
+export interface AddStockPayload {
+  productId: string;
+  businessId: string;
+  quantity: number;
+  unitCost?: number;
+  expiryDate?: string;
+}
+
 /* =========================================================
    CATEGORY
 ========================================================= */
